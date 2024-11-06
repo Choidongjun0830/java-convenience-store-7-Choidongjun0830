@@ -66,6 +66,9 @@ public class ProductService {
     }
 
     public Product getPromotionProductByName(String name) {
+        if(productRepository.getPromotionProducts().isEmpty()) {
+            productRepository.getPromotionProducts();
+        }
         return productRepository.getPromotionProductByName(name);
     }
 
