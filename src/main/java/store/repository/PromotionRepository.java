@@ -18,4 +18,10 @@ public class PromotionRepository {
     }
 
 
+    public Promotion getPromotionByName(String name) {
+        return promotions.stream()
+                .filter(promotion -> promotion.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
 }

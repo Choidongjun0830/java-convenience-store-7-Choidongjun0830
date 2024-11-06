@@ -42,4 +42,8 @@ public class PromotionService {
         }
         return promotionRepository.getAllPromotions();
     }
+
+    public Promotion getPromotionByName(String name) {
+        return promotionRepository.getPromotionByName(name);
+    }
 }
