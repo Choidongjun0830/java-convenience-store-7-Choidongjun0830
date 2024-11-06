@@ -24,7 +24,27 @@ public class StoreController {
 
         List<String> buyProductAmount = inputView.getBuyProductAmount();
 
+            if(promotionProduct != null) {
+                String promotion = promotionProduct.getPromotion();
+                Promotion activePromotion = getActivePromotionByName(promotion);
+
+                if(activePromotion != null) {
+                    activePromotions.put(name, activePromotion);
+                }
+            }
+        }
+        return activePromotions;
+    }
 
 
+    private Promotion getActivePromotionByName(String promotionName) {
+        LocalDate now = LocalDate.now();
+        Promotion promotionByName = promotionService.getPromotionByName(promotionName);
+        if (promotionByName != null) {
+            LocalDate startDate = promotionByName.getStart_date();
+            LocalDate endDate = promotionByName.getEnd_date();
+            return promotionByName;
+        }
+        return null;
     }
 }
