@@ -1,5 +1,6 @@
 package store.view;
 
+import camp.nextstep.edu.missionutils.Console;
 import java.util.List;
 import java.util.Scanner;
 import store.domain.Product;
@@ -25,6 +26,18 @@ public class InputView {
     public List<Promotion> getPromotionList() {
         List<Promotion> promotions = PromotionParser.parseProducts("src/main/resources/promotions.md");
         return promotions;
+    }
+
+    public List<String> getBuyProductAmount() {
+        String buyProductAmount = Console.readLine();
+        String[] buyProductAmounts = buyProductAmount.split(",");
+
+        for (int i = 0; i < buyProductAmounts.length; i++) {
+            buyProductAmounts[i] = buyProductAmounts[i].trim();
+        }
+        return List.of(buyProductAmounts);
+        //상품이 재고에 있는지
+        //수량이 유효한지
     }
 
 }
