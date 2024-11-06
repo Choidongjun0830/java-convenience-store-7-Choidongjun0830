@@ -1,4 +1,4 @@
-package store.parser;
+package store.service;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import store.domain.Product;
 
-public class ProductParser {
+public class ProductService {
 
     public static List<Product> parseProducts(String filePath) {
         List<Product> products = new ArrayList<>();
@@ -21,7 +21,6 @@ public class ProductParser {
                 int quantity = Integer.parseInt(fields[2]);
                 String promotion = fields.length > 3 ? fields[3] : null; // 수정하기
                 products.add(new Product(name, price, quantity, promotion));
-
             }
             return products;
         } catch (IOException e) {
