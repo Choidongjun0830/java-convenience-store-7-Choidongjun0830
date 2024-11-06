@@ -46,7 +46,7 @@ public class ProductService {
         return productRepository.getAllProducts();
     }
 
-    public Map<String, Integer> getBuyProductAmount() {
+    public List<Product> getBuyProductAmount() {
         String buyProductAmountsInput = inputView.getBuyProductAmount();
         String[] buyProductAmounts = buyProductAmountsInput.split(",");
 
@@ -54,12 +54,13 @@ public class ProductService {
             buyProductAmounts[i] = buyProductAmounts[i].replaceAll("[\\[\\]]", "").trim();
         }
 
-        Map<String, Integer> buyProductsAmount = new HashMap<>();
+        List<Product> buyProducts = new ArrayList<>();
         for (String buyProductAmount : buyProductAmounts) {
             String[] splitProductAmount = buyProductAmount.split("-");
-            buyProductsAmount.put(splitProductAmount[0].trim(), Integer.parseInt(splitProductAmount[1].trim()));
+            Product buyProduct = new Product(splitProductAmount[0].trim(), Integer.parseInt(splitProductAmount[1].trim()));
+            buyProducts.add(buyProduct);
         }
-        return buyProductsAmount;
+        return buyProducts;
         //유효한 입력인지 -가 맞은지
         //상품이 재고에 있는지
         //수량이 유효한지
