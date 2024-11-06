@@ -65,4 +65,8 @@ public class ProductService {
         //수량이 유효한지
     }
 
+    public Product getPromotionProductByName(String name) {
+        return productRepository.getPromotionProductByName(name);
+    }
+
 }
