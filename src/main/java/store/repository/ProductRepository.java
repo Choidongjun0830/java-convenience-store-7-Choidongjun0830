@@ -6,14 +6,15 @@ import store.domain.Product;
 
 public class ProductRepository {
 
-    private List<Product> products = new ArrayList<>();
+    private final List<Product> products = new ArrayList<>();
+    List<Product> promotionProducts = new ArrayList<>();
+    List<Product> regularProducts = new ArrayList<>();
 
     public void addProduct(Product product) {
         products.add(product);
     }
 
     public List<Product> getPromotionProducts() {
-        List<Product> promotionProducts = new ArrayList<>();
         for (Product product : products) {
             if (product.isPromotion()) {
                 promotionProducts.add(product);
@@ -23,7 +24,6 @@ public class ProductRepository {
     }
 
     public List<Product> getRegularProducts() {
-        List<Product> regularProducts = new ArrayList<>();
         for (Product product : products) {
             if (!product.isPromotion()) {
                 regularProducts.add(product);
@@ -34,5 +34,23 @@ public class ProductRepository {
 
     public List<Product> getAllProducts() {
         return products;
+    }
+
+    public Product getPromotionProductByName(String name) {
+        return promotionProducts.stream()
+                .filter(product -> product.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public Product getRegularProductByName(String name) {
+        return regularProducts.stream()
+                .filter(product -> product.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void decreaseProductQuantity(Product product) {
+
     }
 }
