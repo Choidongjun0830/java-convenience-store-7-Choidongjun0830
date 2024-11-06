@@ -28,4 +28,24 @@ public class Promotion {
                 ", end_date=" + end_date +
                 '}';
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getBuyAmount() {
+        return buyAmount;
+    }
+
+    public int getGetAmount() {
+        return getAmount;
+    }
+
+    public LocalDate getStart_date() {
+        return start_date;
+    }
+
+    public LocalDate getEnd_date() {
+        return end_date;
+    }
 }
