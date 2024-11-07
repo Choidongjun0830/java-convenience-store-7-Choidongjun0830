@@ -4,10 +4,12 @@ public class PromotionApplyResult {
 
     private int totalGetAmount;
     private int totalPromotedPrice;
+    private int totalPromotedSalePrice;
 
-    public PromotionApplyResult(int totalGetAmount, int totalPromotedPrice) {
+    public PromotionApplyResult(int totalGetAmount, int totalPromotedPrice, int totalPromotedSalePrice) {
         this.totalGetAmount = totalGetAmount;
         this.totalPromotedPrice = totalPromotedPrice;
+        this.totalPromotedSalePrice = totalPromotedSalePrice;
     }
 
     public int getTotalGetAmount() {
@@ -18,11 +20,8 @@ public class PromotionApplyResult {
         return totalPromotedPrice;
     }
 
-    @Override
-    public String toString() {
-        return "PromotionApplyResult{" +
-                "totalGetAmount=" + totalGetAmount +
-                ", totalPromotedPrice=" + totalPromotedPrice +
-                '}';
+    public int getTotalPromotedSalePrice() {
+        return totalPromotedSalePrice;
     }
+
 }
