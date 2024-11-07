@@ -36,20 +36,20 @@ public class StoreController {
             List<Promotion> promotionList = promotionService.getAllPromotions();
 
             List<Product> buyProducts = productService.getBuyProductAmount();
-            List<Product> buyProductsCopy = cloneProductList(buyProducts);
+            List<Product> buyProductsForReceipt = productService.cloneProductList(buyProducts);
             Map<String, Promotion> activePromotions = findActivePromotions(buyProducts);
 
             //프로모션 적용 가능 여부 확인 후 적용
             Map<Product, PromotionApplyResult> promotionResults = applyNotPurchaseAmount(
-                    buyProducts, activePromotions, buyProductsCopy);
+                    buyProducts, activePromotions, buyProductsForReceipt);
 
-            int totalProductPrice = getTotalProductPrice(buyProductsCopy, productList);
+            int totalProductPrice = productService.getTotalProductPrice(buyProductsForReceipt, productList);
             int totalPromotedPrice = getTotalPromotedPrice(promotionResults);
 
             String checkMembership = inputView.checkMembership();
             int membershipSaleAmount = applyMembership(totalProductPrice - totalPromotedPrice, checkMembership);
 
-            outputView.printReceipt(productList, buyProductsCopy, promotionResults, totalProductPrice, membershipSaleAmount);
+            outputView.printReceipt(productList, buyProductsForReceipt, promotionResults, totalProductPrice, membershipSaleAmount);
 
             if (inputView.checkAdditionalPurchase().equals("N")) {
                 break;
@@ -61,12 +61,6 @@ public class StoreController {
         List<Product> productList = productService.getAllProducts();
         outputView.printWelcomeAndStockList(productList);
         return productList;
-    }
-
-    private static List<Product> cloneProductList(List<Product> buyProducts) {
-        return buyProducts.stream()
-                .map(Product::clone)
-                .collect(Collectors.toList());
     }
 
     private Map<String, Promotion> findActivePromotions(List<Product> buyProducts) {
@@ -116,9 +110,23 @@ public class StoreController {
             if(promotion != null) {
                 PromotionApplyResult promotionApplyResult = applyPromotion(buyProduct, promotion, buyProductClone);
                 applyResults.put(buyProduct, promotionApplyResult);
+                continue;
             }
+            buyRegularProduct(buyProduct, buyProductClone);
+
         }
         return applyResults;
+    }
+
+    private void buyRegularProduct(Product buyProduct, List<Product> buyProductClone) {
+        Product product = productService.getRegularProductByName(buyProduct.getName());
+        int quantity = buyProduct.getQuantity();
+        if(product.getQuantity() >= quantity) {
+            product.decreaseQuantity(quantity);
+            buyProduct.decreaseQuantity(quantity);
+            return;
+        }
+        //예외처리
     }
 
     private PromotionApplyResult applyPromotion(Product buyProduct, Promotion promotion, List<Product> buyProductClone) {
@@ -133,15 +141,8 @@ public class StoreController {
 
         while (buyProduct.getQuantity() >= promotionBuyAmount && promotionProduct.getQuantity() >= promotionTotalAmount) {
 
-            if(buyProduct.getQuantity() == promotionBuyAmount && buyProduct.getQuantity() < promotionTotalAmount) {;
-                String response = inputView.checkAdditionalQuantity(buyProduct.getName(), promotionGetAmount);
-                if(response.equalsIgnoreCase("Y")) {
-                    buyProduct.increaseQuantity(promotionGetAmount);
-                    increaseTotalPurchaseAmount(buyProduct.getName(), buyProductClone, promotionGetAmount);
-                }
-                if(buyProduct.getQuantity() < promotionGetAmount) {
-                    break;
-                }
+            if (applyExtraForPromo(buyProduct, buyProductClone, promotionBuyAmount, promotionTotalAmount, promotionGetAmount)) {
+                break;
             }
 
             totalGetAmount += promotionGetAmount;
@@ -150,28 +151,44 @@ public class StoreController {
             buyProduct.decreaseQuantity(promotionTotalAmount);
             promotionProduct.decreaseQuantity(promotionTotalAmount);
         }
+
         int notPurchaseAmount = checkPurchaseWithoutPromotion(buyProduct);
         NotPurchaseProduct notPurchaseProduct = new NotPurchaseProduct(buyProduct.getName(), notPurchaseAmount);
+
+        if(buyProduct.getQuantity() > 0) {
+            int promotionProductQuantity = promotionProduct.getQuantity();
+            if(promotionProductQuantity > 0) {
+                promotionProduct.decreaseQuantity(promotionProductQuantity);
+                buyProduct.decreaseQuantity(promotionProductQuantity);
+            }
+            int remainBuyProductQuantity = buyProduct.getQuantity();
+            if(remainBuyProductQuantity > 0) {
+                Product regularProduct = productService.getRegularProductByName(buyProduct.getName());
+                regularProduct.decreaseQuantity(remainBuyProductQuantity);
+                buyProduct.decreaseQuantity(remainBuyProductQuantity);
+            }
+        }
         return new PromotionApplyResult(totalGetAmount, totalPromotedPrice, totalPromotedSalePrice, notPurchaseProduct);
     }
 
-    private int getTotalProductPrice(List<Product> buyProducts, List<Product> productList) {
-        int totalProductPrice = 0;
-        for (Product buyProduct : buyProducts) {
-            int price = getProductPrice(buyProduct.getName(), productList) * buyProduct.getQuantity();
-            totalProductPrice += price;
-        }
-        return totalProductPrice;
-    }
-
-    private int getProductPrice(String name, List<Product> productList) {
-        for(Product product : productList) {
-            if(product.getName().equals(name)) { //프로모션 상품과 금액 다를 경우도 고려.
-                return product.getPrice();
+    private boolean applyExtraForPromo(Product buyProduct, List<Product> buyProductClone, int promotionBuyAmount,
+                              int promotionTotalAmount, int promotionGetAmount) {
+        if(buyProduct.getQuantity() == promotionBuyAmount && buyProduct.getQuantity() < promotionTotalAmount) {;
+            String response = inputView.checkAdditionalQuantity(buyProduct.getName(), promotionGetAmount);
+            if(response.equalsIgnoreCase("Y")) {
+                buyProduct.increaseQuantity(promotionGetAmount);
+                increaseTotalPurchaseAmount(buyProduct.getName(), buyProductClone, promotionGetAmount);
+            }
+            if(buyProduct.getQuantity() < promotionGetAmount) {
+                return true;
             }
         }
-        return 0;
+        return false;
     }
+
+
+
+
 
     private int applyMembership(int nonPromotedPrice, String checkMembership) {
         if(checkMembership.equalsIgnoreCase("Y")) {

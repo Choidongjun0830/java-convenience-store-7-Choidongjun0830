@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import store.domain.Product;
 import store.repository.ProductRepository;
 import store.view.InputView;
@@ -67,10 +68,36 @@ public class ProductService {
     }
 
     public Product getPromotionProductByName(String name) {
-        if(productRepository.getPromotionProducts().isEmpty()) {
-            productRepository.getPromotionProducts();
-        }
+        productRepository.getPromotionProducts();
         return productRepository.getPromotionProductByName(name);
     }
 
+    public Product getRegularProductByName(String name) {
+        productRepository.getRegularProducts();
+        return productRepository.getRegularProductByName(name);
+    }
+
+    public List<Product> cloneProductList(List<Product> buyProducts) {
+        return buyProducts.stream()
+                .map(Product::clone)
+                .collect(Collectors.toList());
+    }
+
+    public int getTotalProductPrice(List<Product> buyProducts, List<Product> productList) {
+        int totalProductPrice = 0;
+        for (Product buyProduct : buyProducts) {
+            int price = getProductPrice(buyProduct.getName(), productList) * buyProduct.getQuantity();
+            totalProductPrice += price;
+        }
+        return totalProductPrice;
+    }
+
+    public int getProductPrice(String name, List<Product> productList) {
+        for(Product product : productList) {
+            if(product.getName().equals(name)) { //프로모션 상품과 금액 다를 경우도 고려.
+                return product.getPrice();
+            }
+        }
+        return 0;
+    }
 }
