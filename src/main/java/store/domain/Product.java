@@ -51,6 +51,10 @@ public class Product implements Cloneable{
         return promotion;
     }
 
+    public void increaseQuantity(int amount) {
+        quantity += amount;
+    }
+
     public void decreaseQuantity(int amount) {
         quantity -= amount;
     }

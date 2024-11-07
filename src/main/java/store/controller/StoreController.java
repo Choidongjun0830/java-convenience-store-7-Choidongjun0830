@@ -49,10 +49,9 @@ public class StoreController {
             String checkMembership = inputView.checkMembership();
             int membershipSaleAmount = applyMembership(totalProductPrice - totalPromotedPrice, checkMembership);
 
-            outputView.printReceipt(productList, buyProductsCopy, promotionResults, totalProductPrice,
-                    membershipSaleAmount);
+            outputView.printReceipt(productList, buyProductsCopy, promotionResults, totalProductPrice, membershipSaleAmount);
 
-            if (inputView.checkAddtionalPurchase().equals("N")) {
+            if (inputView.checkAdditionalPurchase().equals("N")) {
                 break;
             }
         }
@@ -109,20 +108,20 @@ public class StoreController {
         return totalPromotedPrice;
     }
 
-    private Map<Product, PromotionApplyResult> applyPromotions(List<Product> buyProducts, Map<String, Promotion> activePromotions) {
+    private Map<Product, PromotionApplyResult> applyPromotions(List<Product> buyProducts, Map<String, Promotion> activePromotions, List<Product> buyProductClone) {
         Map<Product, PromotionApplyResult> applyResults = new HashMap<>();
 
         for (Product buyProduct : buyProducts) {
             Promotion promotion = activePromotions.get(buyProduct.getName());
             if(promotion != null) {
-                PromotionApplyResult promotionApplyResult = applyPromotion(buyProduct, promotion);
+                PromotionApplyResult promotionApplyResult = applyPromotion(buyProduct, promotion, buyProductClone);
                 applyResults.put(buyProduct, promotionApplyResult);
             }
         }
         return applyResults;
     }
 
-    private PromotionApplyResult applyPromotion(Product buyProduct, Promotion promotion) {
+    private PromotionApplyResult applyPromotion(Product buyProduct, Promotion promotion, List<Product> buyProductClone) {
         int promotionBuyAmount = promotion.getBuyAmount();
         int promotionGetAmount = promotion.getGetAmount();
         int promotionTotalAmount = promotionBuyAmount + promotionGetAmount;
@@ -133,6 +132,18 @@ public class StoreController {
         int totalPromotedSalePrice = 0;
 
         while (buyProduct.getQuantity() >= promotionBuyAmount && promotionProduct.getQuantity() >= promotionTotalAmount) {
+
+            if(buyProduct.getQuantity() == promotionBuyAmount && buyProduct.getQuantity() < promotionTotalAmount) {;
+                String response = inputView.checkAdditionalQuantity(buyProduct.getName(), promotionGetAmount);
+                if(response.equalsIgnoreCase("Y")) {
+                    buyProduct.increaseQuantity(promotionGetAmount);
+                    increaseTotalPurchaseAmount(buyProduct.getName(), buyProductClone, promotionGetAmount);
+                }
+                if(buyProduct.getQuantity() < promotionGetAmount) {
+                    break;
+                }
+            }
+
             totalGetAmount += promotionGetAmount;
             totalPromotedPrice += promotionTotalAmount * promotionProduct.getPrice();
             totalPromotedSalePrice += promotionGetAmount * promotionProduct.getPrice();
@@ -163,18 +174,18 @@ public class StoreController {
     }
 
     private int applyMembership(int nonPromotedPrice, String checkMembership) {
-        if(checkMembership.equals("Y")) {
+        if(checkMembership.equalsIgnoreCase("Y")) {
             int saleAmount = nonPromotedPrice * 30 / 100;
             if(saleAmount >= 8000) {
                 return -8000;
             }
             return -saleAmount;
         }
-        return 0;
+        return -0;
     }
 
     private Map<Product, PromotionApplyResult> applyNotPurchaseAmount(List<Product> buyProducts, Map<String, Promotion> activePromotions, List<Product> buyProductsCopy) {
-        Map<Product, PromotionApplyResult> promotionResults = applyPromotions(buyProducts, activePromotions);
+        Map<Product, PromotionApplyResult> promotionResults = applyPromotions(buyProducts, activePromotions, buyProductsCopy);
         for (PromotionApplyResult promotionApplyResult : promotionResults.values()) {
             NotPurchaseProduct notPurchaseProduct = promotionApplyResult.getNotPurchaseProduct();
             for (Product buyProduct : buyProductsCopy) {
@@ -188,7 +199,7 @@ public class StoreController {
 
     private int checkPurchaseWithoutPromotion(Product buyProduct) {
         if(buyProduct.getQuantity() > 0) {
-            String checkPurchaseWithoutPromotion = inputView.checkPurchaseWithoutPromotion(buyProduct.getName());
+            String checkPurchaseWithoutPromotion = inputView.checkPurchaseWithoutPromotion(buyProduct.getName(), buyProduct.getQuantity());
             if(checkPurchaseWithoutPromotion.equals("N")) {
                 int result = buyProduct.getQuantity();
                 buyProduct.decreaseQuantity(buyProduct.getQuantity());
@@ -196,5 +207,13 @@ public class StoreController {
             }
         }
         return 0;
+    }
+
+    private void increaseTotalPurchaseAmount(String name, List<Product> buyProductCopy, int increaseAmount) {
+        for (Product product : buyProductCopy) {
+            if(product.getName().equals(name)) {
+                product.increaseQuantity(increaseAmount);
+            }
+        }
     }
 }
