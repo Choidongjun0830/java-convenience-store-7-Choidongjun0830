@@ -3,7 +3,6 @@ package store.view;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import store.domain.Product;
 import store.dto.PromotionApplyResult;
 import store.util.MoneyFormatter;
@@ -43,7 +42,11 @@ public class OutputView {
         System.out.println("\n" + PRODUCT_INPUT_MESSAGE);
     }
 
-    public void printReceipt(List<Product> productList, List<Product> buyProducts, Map<Product, PromotionApplyResult> productPromotionApplyResults) {
+    public void printReceipt(List<Product> productList,
+                             List<Product> buyProducts,
+                             Map<Product, PromotionApplyResult> productPromotionApplyResults,
+                             int totalProductPrice,
+                             int membershipSaleAmount) {
         System.out.println(RECEIPT_HEADER);
         System.out.println(BUY_PRODUCT_LIST_HEADER);
         int totalAllProductPrice = 0;
@@ -61,11 +64,12 @@ public class OutputView {
             PromotionApplyResult promotionApplyResult = productPromotionApplyResult.getValue();
             System.out.println(promotionProduct.getName() + "\t" + promotionApplyResult.getTotalGetAmount());
         }
+        int totalPromotedPrice = getTotalPromotedPrice(productPromotionApplyResults);
         System.out.println(PRICE_LIST_HEADER);
-        System.out.println("총구매액" + "\t" + totalAllProductQuantity + "\t" + MoneyFormatter.formatMoney(totalAllProductPrice));
-        System.out.println("행사할인");
-        System.out.println("멤버십할인");
-        System.out.println("내실돈");
+        System.out.println("총구매액" + "\t" + totalAllProductQuantity + "\t" + MoneyFormatter.formatMoney(totalProductPrice));
+        System.out.println("행사할인" + "\t" + MoneyFormatter.formatMoney(totalPromotedPrice));
+        System.out.println("멤버십할인" + "\t" + MoneyFormatter.formatMoney(membershipSaleAmount));
+        System.out.println("내실돈" + "\t" + MoneyFormatter.formatMoney(totalProductPrice + totalPromotedPrice + membershipSaleAmount));
     }
 
     public void printPromotionNotApplicable() {
@@ -90,6 +94,14 @@ public class OutputView {
             }
         }
         return 0;
+    }
+
+    private int getTotalPromotedPrice(Map<Product, PromotionApplyResult> productPromotionApplyResults) {
+        int totalPromotedPrice = 0;
+        for (PromotionApplyResult promotionApplyResult : productPromotionApplyResults.values()) {
+            totalPromotedPrice += promotionApplyResult.getTotalPromotedSalePrice();
+        }
+        return -totalPromotedPrice;
     }
 
 }
