@@ -5,11 +5,13 @@ public class PromotionApplyResult {
     private int totalGetAmount;
     private int totalPromotedPrice;
     private int totalPromotedSalePrice;
+    private NotPurchaseProduct notPurchaseProduct;
 
-    public PromotionApplyResult(int totalGetAmount, int totalPromotedPrice, int totalPromotedSalePrice) {
+    public PromotionApplyResult(int totalGetAmount, int totalPromotedPrice, int totalPromotedSalePrice, NotPurchaseProduct notPurchaseProduct) {
         this.totalGetAmount = totalGetAmount;
         this.totalPromotedPrice = totalPromotedPrice;
         this.totalPromotedSalePrice = totalPromotedSalePrice;
+        this.notPurchaseProduct = notPurchaseProduct;
     }
 
     public int getTotalGetAmount() {
@@ -24,4 +26,7 @@ public class PromotionApplyResult {
         return totalPromotedSalePrice;
     }
 
+    public NotPurchaseProduct getNotPurchaseProduct() {
+        return notPurchaseProduct;
+    }
 }
