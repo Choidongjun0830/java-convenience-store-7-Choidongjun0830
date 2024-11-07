@@ -1,14 +1,12 @@
 package store.controller;
 
+import camp.nextstep.edu.missionutils.DateTimes;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import store.domain.Product;
 import store.domain.Promotion;
 import store.dto.PromotionApplyResult;
@@ -32,19 +30,56 @@ public class StoreController {
     }
 
     public void startProcess() {
-        List<Product> productList = productService.getAllProducts();
-        List<Promotion> promotionList = promotionService.getAllPromotions();
-        outputView.printWelcomeAndStockList(productList);
+        while (true) {
+            List<Product> productList = productService.getAllProducts();
+            List<Promotion> promotionList = promotionService.getAllPromotions();
+            outputView.printWelcomeAndStockList(productList);
 
-        List<Product> buyProducts = productService.getBuyProductAmount();
-        List<Product> buyProductsCopy = buyProducts.stream()
-                .map(Product::clone)
-                .collect(Collectors.toList());
-        Map<String, Promotion> activePromotions = findActivePromotionsForBuyProducts(buyProducts);
+            List<Product> buyProducts = productService.getBuyProductAmount();
+            List<Product> buyProductsCopy = buyProducts.stream()
+                    .map(Product::clone)
+                    .collect(Collectors.toList());
+            Map<String, Promotion> activePromotions = findActivePromotionsForBuyProducts(buyProducts);
 
-        Map<Product, PromotionApplyResult> productPromotionApplyResults = applyPromotions(buyProducts, activePromotions);
+            //프로모션 적용 가능 여부 확인 후 적용
+            Map<Product, PromotionApplyResult> productPromotionApplyResults = applyPromotions(buyProducts, activePromotions);
+            int totalProductPrice = getTotalProductPrice(buyProductsCopy, productList);
+            System.out.println("totalProductPrice = " + totalProductPrice);
 
-        outputView.printReceipt(productList, buyProductsCopy, productPromotionApplyResults);
+            int totalPromotedPrice = getTotalPromotedPrice(productPromotionApplyResults);
+            System.out.println("totalPromotedPrice = " + totalPromotedPrice);
+
+            //멤버십 할인 여부 확인 - 프로모션 미적용되는 상품 금액의 30% 할인 - 최대 한도는 8000원
+            String checkMembership = inputView.checkMembership();
+            int membershipSaleAmount = applyMembership(totalProductPrice - totalPromotedPrice, checkMembership);
+            System.out.println("membershipSaleAmount = " + membershipSaleAmount);
+
+            outputView.printReceipt(productList, buyProductsCopy, productPromotionApplyResults, totalProductPrice, membershipSaleAmount);
+
+            String checkAddtionalPurchase = inputView.checkAddtionalPurchase();
+            if (checkAddtionalPurchase.equals("N")) break;
+        }
+
+    }
+
+    private static int getTotalPromotedPrice(Map<Product, PromotionApplyResult> productPromotionApplyResults) {
+        int totalPromotedPrice = 0;
+        for (PromotionApplyResult promotionApplyResult : productPromotionApplyResults.values()) {
+            int promotedPrice = promotionApplyResult.getTotalPromotedPrice();
+            totalPromotedPrice += promotedPrice;
+        }
+        return totalPromotedPrice;
+    }
+
+    private int applyMembership(int nonPromotedPrice, String checkMembership) {
+        if(checkMembership.equals("Y")) {
+            int saleAmount = nonPromotedPrice * 30 / 100;
+            if(saleAmount >= 8000) {
+                return -8000;
+            }
+            return -saleAmount;
+        }
+        return 0;
     }
 
     private Map<Product, PromotionApplyResult> applyPromotions(List<Product> buyProducts, Map<String, Promotion> activePromotions) {
@@ -59,14 +94,17 @@ public class StoreController {
                 Product promotionProduct = productService.getPromotionProductByName(buyProduct.getName());
                 int totalGetAmount = 0;
                 int totalPromotedPrice = 0;
+                int totalPromotedSalePrice = 0;
 
                 while(buyProduct.getQuantity() >= promotionBuyAmount && promotionProduct.getQuantity() >= promotionTotalAmount){
                     totalGetAmount += promotionGetAmount;
-                    totalPromotedPrice += promotionBuyAmount * promotionProduct.getPrice();
+                    totalPromotedPrice += promotionTotalAmount * promotionProduct.getPrice();
+                    totalPromotedSalePrice += promotionGetAmount * promotionProduct.getPrice();
                     buyProduct.decreaseQuantity(promotionTotalAmount);
                     promotionProduct.decreaseQuantity(promotionTotalAmount);
                 }
-                applyResult.put(buyProduct, new PromotionApplyResult(totalGetAmount, totalPromotedPrice));
+                System.out.println(totalPromotedSalePrice);
+                applyResult.put(buyProduct, new PromotionApplyResult(totalGetAmount, totalPromotedPrice, totalPromotedSalePrice));
             }
         }
         return applyResult;
@@ -93,13 +131,31 @@ public class StoreController {
 
 
     private Promotion getActivePromotionByName(String promotionName) {
-        LocalDate now = LocalDate.now();
+        LocalDateTime now = DateTimes.now();
         Promotion promotionByName = promotionService.getPromotionByName(promotionName);
         if (promotionByName != null) {
-            LocalDate startDate = promotionByName.getStart_date();
-            LocalDate endDate = promotionByName.getEnd_date();
+            LocalDate startDate = promotionByName.getStartDate();
+            LocalDate endDate = promotionByName.getEndDate();
             return promotionByName;
         }
         return null;
+    }
+
+    private int getTotalProductPrice(List<Product> buyProducts, List<Product> productList) {
+        int totalProductPrice = 0;
+        for (Product buyProduct : buyProducts) {
+            int price = getProductPrice(buyProduct.getName(), productList) * buyProduct.getQuantity();
+            totalProductPrice += price;
+        }
+        return totalProductPrice;
+    }
+
+    private int getProductPrice(String name, List<Product> productList) {
+        for(Product product : productList) {
+            if(product.getName().equals(name)) { //프로모션 상품과 금액 다를 경우도 고려.
+                return product.getPrice();
+            }
+        }
+        return 0;
     }
 }
