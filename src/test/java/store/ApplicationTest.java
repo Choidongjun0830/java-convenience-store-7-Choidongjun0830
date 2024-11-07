@@ -38,6 +38,30 @@ class ApplicationTest extends NsTest {
     }
 
     @Test
+    void 상품_구매_입력_받기() {
+        assertSimpleTest(() -> {
+            run("[콜라-3],[에너지바-5]"); //오렌지 주스 5개이면 하나 더 가져가라고 해야함. => 프로모션 적용 후 -1이 됨
+            assertThat(output());
+        });
+    }
+
+    @Test
+    void 멤버십_여부_입력_받기_Y() {
+        assertSimpleTest(() -> {
+            run("[콜라-3],[에너지바-5]", "Y"); //오렌지 주스 5개이면 하나 더 가져가라고 해야함. => 프로모션 적용 후 -1이 됨
+            assertThat(output());
+        });
+    }
+
+    @Test
+    void 멤버십_여부_입력_받기_N() {
+        assertSimpleTest(() -> {
+            run("[콜라-3],[에너지바-5]", "N"); //오렌지 주스 5개이면 하나 더 가져가라고 해야함. => 프로모션 적용 후 -1이 됨
+            assertThat(output());
+        });
+    }
+
+    @Test
     void 여러_개의_일반_상품_구매() {
         assertSimpleTest(() -> {
             run("[비타민워터-3],[물-2],[정식도시락-2]", "N", "N");
