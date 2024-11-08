@@ -108,15 +108,39 @@ public class StoreController {
         return totalPromotedPrice;
     }
 
-    private int applyMembership(int nonPromotedPrice, String checkMembership) { //멤버십을 Enum으로?
-        if(checkMembership.equalsIgnoreCase("Y")) {
-            int saleAmount = nonPromotedPrice * 30 / 100;
-            if(saleAmount >= 8000) {
-                return -8000;
+    private ReceiptInfo calculateReceiptInfoAndApplyMembership(List<Product> purchaseProductsForReceipt, List<Product> productList, List<PromotionApplyResult> productPromotionApplyResults) {
+        int totalProductPrice = productService.getTotalProductPrice(purchaseProductsForReceipt, productList); //상품 총액
+        int totalPromotedPrice = getTotalPromotedPrice(productPromotionApplyResults); //프로모션으로 할인된 가격
+
+        Membership membership = checkMembership();
+        int membershipDiscountAmount = applyMembership(totalProductPrice - totalPromotedPrice, membership);
+
+        return new ReceiptInfo(totalProductPrice, totalPromotedPrice, membershipDiscountAmount);
+    }
+
+    private Membership checkMembership() {
+        while(true) {
+            try{
+                String getMembership = inputView.checkMembership();
+                Membership checkMembership = Membership.NON_MEMBERSHIP;
+                if (getMembership.equals("Y")) {
+                    checkMembership =  Membership.MEMBERSHIP;
+                }
+                //검증
+                return checkMembership;
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
             }
-            return -saleAmount;
         }
-        return -0;
+    }
+
+    private int applyMembership(int nonPromotedPrice, Membership checkMembership) {
+        int saleAmount = (int) (nonPromotedPrice * checkMembership.getDiscountRate());
+
+        if(saleAmount > 8000) {
+            saleAmount = 8000;
+        }
+        return -saleAmount;
     }
 
     private int applyMembership(int nonPromotedPrice) {
