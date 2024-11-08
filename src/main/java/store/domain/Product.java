@@ -60,17 +60,6 @@ public class Product implements Cloneable{
     }
 
     @Override
-    public String toString() {
-        return "Product{" +
-                "name='" + name + '\'' +
-                ", price=" + price +
-                ", quantity=" + quantity +
-                ", promotion='" + promotion + '\'' +
-                ", productType=" + productType +
-                '}';
-    }
-
-    @Override
     public Product clone() {
         return new Product(this.name, this.quantity);
     }
