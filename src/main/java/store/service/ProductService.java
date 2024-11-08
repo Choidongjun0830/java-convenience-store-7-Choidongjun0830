@@ -47,8 +47,7 @@ public class ProductService {
         return productRepository.getAllProducts();
     }
 
-    public List<Product> getBuyProductAmount() {
-        String buyProductAmountsInput = inputView.getBuyProductAmount();
+    public List<Product> parsePurchaseProductFromInput(String buyProductAmountsInput) {
         String[] buyProductAmounts = buyProductAmountsInput.split(",");
 
         for (int i = 0; i < buyProductAmounts.length; i++) {
