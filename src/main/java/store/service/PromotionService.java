@@ -85,15 +85,15 @@ public class PromotionService {
         return !now.isBefore(promotion.getStartDate()) && !now.isAfter(promotion.getEndDate());
     }
 
-    public boolean applyExtraForPromo(Product buyProduct, List<Product> buyProductClone, int promotionBuyAmount,
+    public boolean applyExtraForPromo(Product purchaseProduct, List<Product> buyProductClone, int promotionBuyAmount,
                                        int promotionTotalAmount, int promotionGetAmount) {
-        if(buyProduct.getQuantity() == promotionBuyAmount && buyProduct.getQuantity() < promotionTotalAmount) {;
-            String response = inputView.checkAdditionalQuantity(buyProduct.getName(), promotionGetAmount);
+        if(purchaseProduct.getQuantity() == promotionBuyAmount && purchaseProduct.getQuantity() < promotionTotalAmount) {;
+            String response = getResponseForExtraProduct(purchaseProduct, promotionGetAmount);
             if(response.equalsIgnoreCase("Y")) {
-                buyProduct.increaseQuantity(promotionGetAmount);
-                productService.increaseTotalPurchaseAmount(buyProduct.getName(), buyProductClone, promotionGetAmount);
+                purchaseProduct.increaseQuantity(promotionGetAmount);
+                productService.increaseTotalPurchaseAmount(purchaseProduct.getName(), buyProductClone, promotionGetAmount);
             }
-            if(buyProduct.getQuantity() < promotionGetAmount) {
+            if(purchaseProduct.getQuantity() < promotionGetAmount) {
                 return true;
             }
         }
