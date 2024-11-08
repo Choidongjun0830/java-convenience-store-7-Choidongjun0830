@@ -27,16 +27,21 @@ public class ProductService {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             reader.readLine();
-            while((line = reader.readLine()) != null) {
-                String[] fields = line.split(",");
-                String name = fields[0];
-                int price = Integer.parseInt(fields[1]);
-                int quantity = Integer.parseInt(fields[2]);
-                String promotion = fields.length > 3 ? fields[3] : null; // 수정하기
-                productRepository.addProduct(new Product(name, price, quantity, promotion));
-            }
+            parseProduct(reader);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
+        }
+    }
+
+    private void parseProduct(BufferedReader reader) throws IOException {
+        String line;
+        while((line = reader.readLine()) != null) {
+            String[] fields = line.split(",");
+            String name = fields[0];
+            int price = Integer.parseInt(fields[1]);
+            int quantity = Integer.parseInt(fields[2]);
+            String promotion = fields.length > 3 ? fields[3] : null; // 수정하기
+            productRepository.addProduct(new Product(name, price, quantity, promotion));
         }
     }
 
