@@ -1,18 +1,22 @@
 package store.dto;
 
+import store.domain.Product;
+
 public class PromotionApplyResult {
 
+    private Product product;
     private int totalGetAmount;
     private int totalPromotedPrice;
     private int totalPromotedSalePrice;
-    private NotPurchaseProduct notPurchaseProduct;
 
-    public PromotionApplyResult(int totalGetAmount, int totalPromotedPrice, int totalPromotedSalePrice, NotPurchaseProduct notPurchaseProduct) {
+    public PromotionApplyResult(Product product, int totalGetAmount, int totalPromotedPrice, int totalPromotedSalePrice) {
+        this.product = product;
         this.totalGetAmount = totalGetAmount;
         this.totalPromotedPrice = totalPromotedPrice;
         this.totalPromotedSalePrice = totalPromotedSalePrice;
-        this.notPurchaseProduct = notPurchaseProduct;
     }
+
+    public Product getProduct() { return product; }
 
     public int getTotalGetAmount() {
         return totalGetAmount;
@@ -24,9 +28,5 @@ public class PromotionApplyResult {
 
     public int getTotalPromotedSalePrice() {
         return totalPromotedSalePrice;
-    }
-
-    public NotPurchaseProduct getNotPurchaseProduct() {
-        return notPurchaseProduct;
     }
 }
