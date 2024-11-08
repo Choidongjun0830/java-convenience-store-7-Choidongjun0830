@@ -1,15 +1,14 @@
 package store.controller;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import store.domain.Product;
 import store.domain.Promotion;
 import store.domain.Store;
 import store.dto.PromotionApplyResult;
 import store.dto.ReceiptInfo;
+import store.dto.TotalProductStock;
+import store.enumerate.Membership;
 import store.service.ProductService;
 import store.service.PromotionService;
 import store.service.StoreService;
@@ -38,35 +37,34 @@ public class StoreController {
 
     public void startProcess() {
         do {
-            List<Product> productList = displayStockList();
-            promotionService.getAllPromotions();
-            List<Product> purchaseProducts = getPurchaseProducts();
+            List<Product> stockProducts = displayStockList();
+            List<Product> purchaseProducts = getPurchaseProducts(stockProducts);
             //영수증 출력을 위한 복제본 생성
             List<Product> purchaseProductsForReceipt = productService.cloneProductList(purchaseProducts);
             //프로모션 적용 가능 여부 확인 후 적용 + 구매
             List<PromotionApplyResult> productPromotionApplyResults = getPurchaseResults(purchaseProducts,
                     purchaseProductsForReceipt);
             //영수증에서 사용하는 정보 계산 및 멤버십 적용
-            ReceiptInfo receiptInfo = calculateReceiptInfoAndApplyMembership(purchaseProductsForReceipt, productList,
+            ReceiptInfo receiptInfo = calculateReceiptInfoAndApplyMembership(purchaseProductsForReceipt, stockProducts,
                     productPromotionApplyResults);
-            outputView.printReceipt(productList, purchaseProductsForReceipt, productPromotionApplyResults, receiptInfo);
+            outputView.printReceipt(stockProducts, purchaseProductsForReceipt, productPromotionApplyResults, receiptInfo);
         } while (!inputView.checkAdditionalPurchase().equals("N"));
     }
 
-    private ReceiptInfo calculateReceiptInfoAndApplyMembership(List<Product> purchaseProductsForReceipt, List<Product> productList, List<PromotionApplyResult> productPromotionApplyResults) {
-        int totalProductPrice = productService.getTotalProductPrice(purchaseProductsForReceipt, productList); //상품 총액
-        int totalPromotedPrice = getTotalPromotedPrice(productPromotionApplyResults); //프로모션으로 할인된 가격
-        int membershipSaleAmount = applyMembership(totalProductPrice - totalPromotedPrice);
+    private List<Product> getPurchaseProducts(List<Product> stockProducts) {
+        while(true) {
+            try {
+                String buyProductAmountInput = inputView.getBuyProductAmount();
+                inputValidator.purchaseProductInputPatternValidate(buyProductAmountInput);
 
-        return new ReceiptInfo(totalProductPrice, totalPromotedPrice, membershipSaleAmount);
-    }
-
-    private List<Product> getPurchaseProducts() {
-        String buyProductAmountInput = inputView.getBuyProductAmount();
-
-        List<Product> purchaseProducts = productService.parsePurchaseProductFromInput(buyProductAmountInput);
-        productService.validateStock(purchaseProducts);
-        return purchaseProducts;
+                List<Product> purchaseProducts = productService.parsePurchaseProductFromInput(buyProductAmountInput);
+                List<TotalProductStock> totalProductStocks = productService.getTotalProductStocks(purchaseProducts);
+                inputValidator.purchaseProductValidate(stockProducts, purchaseProducts, totalProductStocks);
+                return purchaseProducts;
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
     }
 
     private List<PromotionApplyResult> getPurchaseResults(List<Product> purchaseProducts,
@@ -84,10 +82,9 @@ public class StoreController {
         Product purchaseProduct = productPromotion.getProduct();
         Promotion appliedPromotion = productPromotion.getPromotion();
         if(appliedPromotion == null) {
-            storeService.purchaseRegularProduct(purchaseProduct, productService.getRegularProductByName(purchaseProduct.getName()));//여기 들어갈거 그냥 productService에서 같은 이름의 promotionProduct 가져오기)
+            storeService.purchaseRegularProduct(purchaseProduct, productService.getRegularProductByName(purchaseProduct.getName()));
             return;
         }
-
         PromotionApplyResult promotionApplyResult = storeService.purchasePromotionProduct(purchaseProduct,
                 appliedPromotion, buyProductsForReceipt);
         productPromotionApplyResults.add(promotionApplyResult);
@@ -108,8 +105,8 @@ public class StoreController {
         return totalPromotedPrice;
     }
 
-    private ReceiptInfo calculateReceiptInfoAndApplyMembership(List<Product> purchaseProductsForReceipt, List<Product> productList, List<PromotionApplyResult> productPromotionApplyResults) {
-        int totalProductPrice = productService.getTotalProductPrice(purchaseProductsForReceipt, productList); //상품 총액
+    private ReceiptInfo calculateReceiptInfoAndApplyMembership(List<Product> purchaseProductsForReceipt, List<Product> stockProducts, List<PromotionApplyResult> productPromotionApplyResults) {
+        int totalProductPrice = productService.getTotalProductPrice(purchaseProductsForReceipt, stockProducts); //상품 총액
         int totalPromotedPrice = getTotalPromotedPrice(productPromotionApplyResults); //프로모션으로 할인된 가격
 
         Membership membership = checkMembership();
@@ -119,14 +116,14 @@ public class StoreController {
     }
 
     private Membership checkMembership() {
-        while(true) {
+        while(true) { //depth 줄이기
             try{
                 String getMembership = inputView.checkMembership();
+                inputValidator.yesOrNoTypeValidate(getMembership);
                 Membership checkMembership = Membership.NON_MEMBERSHIP;
                 if (getMembership.equals("Y")) {
                     checkMembership =  Membership.MEMBERSHIP;
                 }
-                //검증
                 return checkMembership;
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
@@ -143,10 +140,6 @@ public class StoreController {
         return -saleAmount;
     }
 
-    private int applyMembership(int nonPromotedPrice) {
-        String checkMembership = inputView.checkMembership();
-        int membershipSaleAmount = applyMembership(nonPromotedPrice, checkMembership);
-        return membershipSaleAmount;
-    }
+
 
 }
