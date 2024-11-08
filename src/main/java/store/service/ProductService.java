@@ -83,21 +83,23 @@ public class ProductService {
 
     public List<Product> cloneProductList(List<Product> buyProducts) {
         return buyProducts.stream()
+    public List<Product> cloneProductList(List<Product> purchaseProducts) {
+        return purchaseProducts.stream()
                 .map(Product::clone)
                 .collect(Collectors.toList());
     }
 
-    public int getTotalProductPrice(List<Product> buyProducts, List<Product> productList) {
+    public int getTotalProductPrice(List<Product> purchaseProducts, List<Product> stockProducts) {
         int totalProductPrice = 0;
-        for (Product buyProduct : buyProducts) {
-            int price = getProductPrice(buyProduct.getName(), productList) * buyProduct.getQuantity();
+        for (Product buyProduct : purchaseProducts) {
+            int price = getProductPrice(buyProduct.getName(), stockProducts) * buyProduct.getQuantity();
             totalProductPrice += price;
         }
         return totalProductPrice;
     }
 
-    public int getProductPrice(String name, List<Product> productList) {
-        for(Product product : productList) {
+    public int getProductPrice(String name, List<Product> stockProducts) {
+        for(Product product : stockProducts) {
             if(product.getName().equals(name)) { //프로모션 상품과 금액 다를 경우도 고려.
                 return product.getPrice();
             }
