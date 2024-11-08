@@ -12,6 +12,7 @@ import java.util.Map;
 import store.domain.Product;
 import store.domain.Promotion;
 import store.repository.PromotionRepository;
+import store.validator.InputValidator;
 import store.view.InputView;
 
 public class PromotionService {
@@ -19,15 +20,16 @@ public class PromotionService {
     private final PromotionRepository promotionRepository;
     private final ProductService productService;
     private final InputView inputView;
+    private final InputValidator inputValidator;
 
-    public PromotionService(PromotionRepository promotionRepository, ProductService productService, InputView inputView) {
+    public PromotionService(PromotionRepository promotionRepository, ProductService productService, InputView inputView, InputValidator inputValidator) {
         this.promotionRepository = promotionRepository;
         this.productService = productService;
         this.inputView = inputView;
+        this.inputValidator = inputValidator;
     }
 
     private void parseProducts(String filePath) {
-        List<Promotion> promotion = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             reader.readLine();
@@ -98,6 +100,18 @@ public class PromotionService {
             }
         }
         return false;
+    }
+
+    private String getResponseForExtraProduct(Product buyProduct, int promotionGetAmount) {
+        while(true) {
+            try {
+                String response = inputView.checkAdditionalQuantity(buyProduct.getName(), promotionGetAmount);
+                inputValidator.yesOrNoTypeValidate(response);
+                return response;
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
     }
 
     public int checkPurchaseWithoutPromotion(Product buyProduct) {
