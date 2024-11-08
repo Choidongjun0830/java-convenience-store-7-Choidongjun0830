@@ -22,7 +22,7 @@ public class StoreService {
 
     public List<Store> connectProductsPromotions(List<Product> buyProducts) {
         List<Store> applyResults = new ArrayList<>();
-
+        promotionService.getAllPromotions();
         Map<String, Promotion> activePromotions = promotionService.findActivePromotions(buyProducts);
         for (Product buyProduct : buyProducts) {
             Promotion promotion = activePromotions.get(buyProduct.getName());
