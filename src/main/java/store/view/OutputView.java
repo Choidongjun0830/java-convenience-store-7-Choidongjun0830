@@ -42,12 +42,12 @@ public class OutputView {
         System.out.println("\n" + PRODUCT_INPUT_MESSAGE);
     }
 
-    public void printReceipt(List<Product> productList,
+    public void printReceipt(List<Product> stockProducts,
                              List<Product> buyProducts,
                              List<PromotionApplyResult> productPromotionApplyResults,
                              ReceiptInfo receiptInfo) {
         System.out.println(RECEIPT_HEADER);
-        int totalAllProductQuantity = printPurchaseProducts(productList, buyProducts);
+        int totalAllProductQuantity = printPurchaseProducts(stockProducts, buyProducts);
 
         printPromotionProducts(productPromotionApplyResults);
         int totalPromotedPrice = getTotalPromotedPrice(productPromotionApplyResults);
