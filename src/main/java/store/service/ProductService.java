@@ -4,12 +4,12 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import store.constant.ExceptionMessage;
 import store.domain.Product;
+import store.dto.TotalProductStock;
 import store.repository.ProductRepository;
 import store.view.InputView;
 
@@ -99,4 +99,52 @@ public class ProductService {
         }
         return 0;
     }
+
+    public void increaseTotalPurchaseAmount(String name, List<Product> buyProductCopy, int increaseAmount) {
+        for (Product product : buyProductCopy) {
+            if(product.getName().equals(name)) {
+                product.increaseQuantity(increaseAmount);
+            }
+        }
+    }
+
+    public List<TotalProductStock> getTotalProductStocks(List<Product> buyProducts) {
+        return buyProducts.stream()
+                .map(buyProduct -> {
+                    String name = buyProduct.getName();
+                    int totalQuantity = Optional.ofNullable(getPromotionProductByName(name))
+                            .map(Product::getQuantity)
+                            .orElse(0)
+                    + Optional.ofNullable(getRegularProductByName(name))
+                            .map(Product::getQuantity)
+                            .orElse(0);
+                    return new TotalProductStock(name, totalQuantity);
+                })
+                .collect(Collectors.toList());
+    }
+
+    public void validateStock(List<Product> purchaseProducts) {
+        // 재고 유효성 검사
+        List<TotalProductStock> totalProductStocks = getTotalProductStocks(purchaseProducts);
+        for (Product product : purchaseProducts) {
+            int stock = findStockForProduct(totalProductStocks, product);
+            if(stock == -1) {
+                throw new IllegalArgumentException(ExceptionMessage.NOT_EXIST_PRODUCT_EXCEPTION);
+            }
+            if (product.getQuantity() > stock) {
+                throw new IllegalArgumentException(ExceptionMessage.STOCK_OVER_EXCEPTION);
+            }
+        }
+    }
+
+    private int findStockForProduct(List<TotalProductStock> totalProductStocks, Product product) {
+        for (TotalProductStock totalProductStock : totalProductStocks) {
+            if(totalProductStock.getName() == product.getName()) {
+                return totalProductStock.getStock();
+            }
+        }
+        return -1;
+    }
+
+
 }
