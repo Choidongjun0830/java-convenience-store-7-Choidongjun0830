@@ -81,8 +81,6 @@ public class ProductService {
         return productRepository.getRegularProductByName(name);
     }
 
-    public List<Product> cloneProductList(List<Product> buyProducts) {
-        return buyProducts.stream()
     public List<Product> cloneProductList(List<Product> purchaseProducts) {
         return purchaseProducts.stream()
                 .map(Product::clone)
@@ -130,19 +128,19 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    public void validateStock(List<Product> purchaseProducts) {
-        // 재고 유효성 검사
-        List<TotalProductStock> totalProductStocks = getTotalProductStocks(purchaseProducts);
-        for (Product product : purchaseProducts) {
-            int stock = findStockForProduct(totalProductStocks, product);
-            if(stock == -1) {
-                throw new IllegalArgumentException(ExceptionMessage.NOT_EXIST_PRODUCT_EXCEPTION);
-            }
-            if (product.getQuantity() > stock) {
-                throw new IllegalArgumentException(ExceptionMessage.STOCK_OVER_EXCEPTION);
-            }
-        }
-    }
+//    public void validateStock(List<Product> purchaseProducts) {
+//        // 재고 유효성 검사
+//        List<TotalProductStock> totalProductStocks = getTotalProductStocks(purchaseProducts);
+//        for (Product product : purchaseProducts) {
+//            int stock = findStockForProduct(totalProductStocks, product);
+//            if(stock == -1) {
+//                throw new IllegalArgumentException(ExceptionMessage.NOT_EXIST_PRODUCT_EXCEPTION);
+//            }
+//            if (product.getQuantity() > stock) {
+//                throw new IllegalArgumentException(ExceptionMessage.STOCK_OVER_EXCEPTION);
+//            }
+//        }
+//    }
 
     private int findStockForProduct(List<TotalProductStock> totalProductStocks, Product product) {
         for (TotalProductStock totalProductStock : totalProductStocks) {
