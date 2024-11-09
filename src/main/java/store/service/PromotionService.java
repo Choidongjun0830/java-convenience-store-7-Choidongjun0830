@@ -5,12 +5,12 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import store.domain.Product;
 import store.domain.Promotion;
+import store.dto.PromotionInfo;
 import store.repository.PromotionRepository;
 import store.validator.InputValidator;
 import store.view.InputView;
@@ -104,7 +104,7 @@ public class PromotionService {
         while(true) {
             try {
                 String response = inputView.checkAdditionalQuantity(buyProduct.getName(), promotionGetAmount);
-                inputValidator.yesOrNoTypeValidate(response);
+                inputValidator.validateYesOrNoType(response);
                 return response;
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
@@ -112,15 +112,12 @@ public class PromotionService {
         }
     }
 
-    public int checkPurchaseWithoutPromotion(Product buyProduct) {
+    public void checkPurchaseWithoutPromotion(Product buyProduct) {
         if(buyProduct.getQuantity() > 0) {
             String checkPurchaseWithoutPromotion = inputView.checkPurchaseWithoutPromotion(buyProduct.getName(), buyProduct.getQuantity());
-            if(checkPurchaseWithoutPromotion.equals("N")) {
-                int result = buyProduct.getQuantity();
+            if(checkPurchaseWithoutPromotion.equalsIgnoreCase("N")) {
                 buyProduct.decreaseQuantity(buyProduct.getQuantity());
-                return result;
             }
         }
-        return 0;
     }
 }
