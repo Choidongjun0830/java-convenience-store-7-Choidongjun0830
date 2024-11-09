@@ -81,11 +81,13 @@ public class StoreService {
         }
     }
 
-    private static void purchaseProductFromPromotionStock(Product purchaseProduct, Product regularProductStock) {
-        int promotionProductQuantity = regularProductStock.getQuantity();
+    private static void purchaseProductFromPromotionStock(Product purchaseProduct, Product stock) {
+        int promotionProductQuantity = stock.getQuantity();
         if(promotionProductQuantity > 0) { //프로모션 재고부터 소진 시키기
-            regularProductStock.decreaseQuantity(promotionProductQuantity);
-            purchaseProduct.decreaseQuantity(promotionProductQuantity);
+            int purchaseQuantity = purchaseProduct.getQuantity();
+            if(purchaseQuantity > promotionProductQuantity) purchaseQuantity = promotionProductQuantity;
+            stock.decreaseQuantity(purchaseQuantity);
+            purchaseProduct.decreaseQuantity(purchaseQuantity);
         }
     }
 }
