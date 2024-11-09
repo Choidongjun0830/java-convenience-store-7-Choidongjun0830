@@ -9,6 +9,7 @@ import store.domain.Promotion;
 import store.domain.Store;
 import store.dto.NotPurchaseProduct;
 import store.dto.PromotionApplyResult;
+import store.dto.PromotionInfo;
 
 public class StoreService {
 
@@ -36,25 +37,22 @@ public class StoreService {
     }
 
     public PromotionApplyResult purchasePromotionProduct(Product buyProduct, Promotion promotion, List<Product> buyProductClone) {
-        int promotionBuyAmount = promotion.getBuyAmount(); //이거를 다른데서 조회하고 넘겨주기.
-        int promotionGetAmount = promotion.getGetAmount();
-        int promotionTotalAmount = promotionBuyAmount + promotionGetAmount;
-
+        PromotionInfo promotionInfo = setupPromotionInfo(promotion);
         Product promotionProduct = productService.getPromotionProductByName(buyProduct.getName());
         int totalGetAmount = 0;
         int totalPromotedPrice = 0;
         int totalPromotedSalePrice = 0;
-
-        while (buyProduct.getQuantity() >= promotionBuyAmount && promotionProduct.getQuantity() >= promotionTotalAmount) {
-            if (promotionService.applyExtraForPromo(buyProduct, buyProductClone, promotionBuyAmount, promotionTotalAmount, promotionGetAmount)) {
+        boolean isExtraPromotionProductApproved = true;
+        while (buyProduct.getQuantity() >= promotionInfo.getPromotionBuyAmount() && promotionProduct.getQuantity() >= promotionInfo.getPromotionTotalAmount()) {
+            if (!promotionService.applyExtraForPromo(buyProduct, buyProductClone, promotionInfo)) {
+                isExtraPromotionProductApproved = false;
                 break;
             }
-
-            totalGetAmount += promotionGetAmount;
-            totalPromotedPrice += promotionTotalAmount * promotionProduct.getPrice();
-            totalPromotedSalePrice += promotionGetAmount * promotionProduct.getPrice();
-            buyProduct.decreaseQuantity(promotionTotalAmount);
-            promotionProduct.decreaseQuantity(promotionTotalAmount);
+            totalGetAmount += promotionInfo.getPromotionGetAmount();
+            totalPromotedPrice += promotionInfo.getPromotionTotalAmount() * promotionProduct.getPrice();
+            totalPromotedSalePrice += promotionInfo.getPromotionGetAmount() * promotionProduct.getPrice();
+            buyProduct.decreaseQuantity(promotionInfo.getPromotionTotalAmount());
+            promotionProduct.decreaseQuantity(promotionInfo.getPromotionTotalAmount());
         }
         int notPurchasedAmount = promotionService.checkPurchaseWithoutPromotion(buyProduct); //이거
 
@@ -62,7 +60,11 @@ public class StoreService {
         return new PromotionApplyResult(buyProduct ,totalGetAmount, totalPromotedPrice, totalPromotedSalePrice);
     }
 
-    public void purchaseRegularProduct(Product purchaseProduct, Product regularProductStock) {
+    private PromotionInfo setupPromotionInfo(Promotion promotion) {
+        return new PromotionInfo(promotion.getBuyAmount(), promotion.getGetAmount());
+    }
+
+    public void purchaseRegularProduct(Product purchaseProduct, Product stock) {
         if(purchaseProduct.getQuantity() > 0) {
             purchaseProductFromPromotionStock(purchaseProduct, regularProductStock);
             purchaseProductFromRegularStock(purchaseProduct);
