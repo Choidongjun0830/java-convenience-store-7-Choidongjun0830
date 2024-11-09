@@ -66,12 +66,16 @@ public class PromotionService {
             if (promotionProduct != null) {
                 String promotion = promotionProduct.getPromotion();
                 Promotion activePromotion = getActivePromotion(promotion);
-                if (activePromotion != null) { //지워도 될듯
-                    activePromotions.put(name, activePromotion);
-                }
+                putActivePromotion(activePromotion, activePromotions, name);
             }
         }
         return activePromotions;
+    }
+
+    private static void putActivePromotion(Promotion activePromotion, Map<String, Promotion> activePromotions, String name) {
+        if (activePromotion != null) { //지워도 될듯
+            activePromotions.put(name, activePromotion);
+        }
     }
 
     private Promotion getActivePromotion(String promotionName) {
