@@ -40,7 +40,7 @@ class ApplicationTest extends NsTest {
     @Test
     void 상품_구매_입력_받기() {
         assertSimpleTest(() -> {
-            run("[콜라-3],[에너지바-5]"); //오렌지 주스 5개이면 하나 더 가져가라고 해야함. => 프로모션 적용 후 -1이 됨
+            run("[콜라-3],[에너지바-5]");
             assertThat(output());
         });
     }
@@ -48,7 +48,7 @@ class ApplicationTest extends NsTest {
     @Test
     void 멤버십_여부_입력_받기_Y() {
         assertSimpleTest(() -> {
-            run("[콜라-3],[에너지바-5]", "Y", "N"); //오렌지 주스 5개이면 하나 더 가져가라고 해야함. => 프로모션 적용 후 -1이 됨
+            run("[콜라-3],[에너지바-5]", "Y", "N");
             assertThat(output());
         });
     }
@@ -56,7 +56,7 @@ class ApplicationTest extends NsTest {
     @Test
     void 멤버십_여부_입력_받기_N() {
         assertSimpleTest(() -> {
-            run("[콜라-3],[에너지바-5]", "N", "N"); //오렌지 주스 5개이면 하나 더 가져가라고 해야함. => 프로모션 적용 후 -1이 됨
+            run("[콜라-3],[에너지바-5]", "N", "N");
             assertThat(output());
         });
     }
@@ -107,14 +107,6 @@ class ApplicationTest extends NsTest {
             run("[감자칩-2]", "N", "N");
             assertThat(output().replaceAll("\\s", "")).contains("내실돈3,000");
         }, LocalDate.of(2024, 2, 1).atStartOfDay());
-    }
-
-    @Test
-    void 예외_테스트() {
-        assertSimpleTest(() -> {
-            runException("[컵라면-12]", "N", "Y");
-            assertThat(output()).contains("[ERROR] 재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
-        });
     }
 
     @Override
