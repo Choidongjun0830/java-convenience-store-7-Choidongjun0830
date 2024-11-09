@@ -52,11 +52,11 @@ public class Product implements Cloneable{
     }
 
     public void increaseQuantity(int amount) {
-        quantity += amount;
+        this.quantity += amount;
     }
 
     public void decreaseQuantity(int amount) {
-        quantity -= amount;
+        this.quantity -= amount;
     }
 
     @Override
@@ -64,5 +64,4 @@ public class Product implements Cloneable{
         return new Product(this.name, this.quantity);
     }
 
-    //"null"이 아니라 null일 경우 예외처리
 }

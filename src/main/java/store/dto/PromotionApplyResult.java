@@ -31,12 +31,12 @@ public class PromotionApplyResult {
     }
 
     public void addTotalGetAmount(int amount) {
-        totalGetAmount += amount;
+        this.totalGetAmount += amount;
     }
     public void addTotalPromotedPrice(int price) {
-        totalPromotedPrice += price;
+        this.totalPromotedPrice += price;
     }
     public void addTotalPromotedSalePrice(int price) {
-        totalPromotedSalePrice += price;
+        this.totalPromotedSalePrice += price;
     }
 }

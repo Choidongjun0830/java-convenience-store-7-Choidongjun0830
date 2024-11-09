@@ -1,13 +1,11 @@
 package store.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import store.domain.Product;
 import store.domain.Promotion;
 import store.domain.Store;
-import store.dto.NotPurchaseProduct;
 import store.dto.PromotionApplyResult;
 import store.dto.PromotionInfo;
 
@@ -36,33 +34,55 @@ public class StoreService {
         return applyResults;
     }
 
-    public PromotionApplyResult purchasePromotionProduct(Product buyProduct, Promotion promotion, List<Product> buyProductClone) {
+    public void purchaseProducts(Store productPromotion, List<Product> buyProductsForReceipt,
+                                  List<PromotionApplyResult> productPromotionApplyResults) {
+        Product purchaseProduct = productPromotion.getProduct();
+        Promotion appliedPromotion = productPromotion.getPromotion();
+        if(appliedPromotion == null) {
+            purchaseRegularProduct(purchaseProduct, productService.getRegularProductByName(purchaseProduct.getName()));
+            return;
+        }
+        PromotionApplyResult promotionApplyResult = purchasePromotionProduct(purchaseProduct, appliedPromotion, buyProductsForReceipt);
+        productPromotionApplyResults.add(promotionApplyResult);
+    }
+
+    public PromotionApplyResult purchasePromotionProduct(Product buyProduct, Promotion promotion, List<Product> purchaseProductsForReceipt) {
         PromotionInfo promotionInfo = setupPromotionInfo(promotion);
         Product promotionProduct = productService.getPromotionProductByName(buyProduct.getName());
-        int totalGetAmount = 0;
-        int totalPromotedPrice = 0;
-        int totalPromotedSalePrice = 0;
-        boolean isExtraPromotionProductApproved = true;
-        while (buyProduct.getQuantity() >= promotionInfo.getPromotionBuyAmount() && promotionProduct.getQuantity() >= promotionInfo.getPromotionTotalAmount()) {
-            if (!promotionService.applyExtraForPromo(buyProduct, buyProductClone, promotionInfo)) {
-                isExtraPromotionProductApproved = false;
-                break;
-            }
-            totalGetAmount += promotionInfo.getPromotionGetAmount();
-            totalPromotedPrice += promotionInfo.getPromotionTotalAmount() * promotionProduct.getPrice();
-            totalPromotedSalePrice += promotionInfo.getPromotionGetAmount() * promotionProduct.getPrice();
-            buyProduct.decreaseQuantity(promotionInfo.getPromotionTotalAmount());
-            promotionProduct.decreaseQuantity(promotionInfo.getPromotionTotalAmount());
-        }
+        PromotionApplyResult promotionApplyResult = new PromotionApplyResult(buyProduct, 0, 0, 0);
+
+        boolean isExtraPromotionProductApproved = applyPromotionProcess(buyProduct, purchaseProductsForReceipt, promotionInfo, promotionProduct, promotionApplyResult);
         if(isExtraPromotionProductApproved && buyProduct.getQuantity() > 0 && !promotion.getName().isBlank()) {
-            promotionService.checkPurchaseWithoutPromotion(buyProduct);
+            promotionService.checkPurchaseWithoutPromotion(buyProduct, purchaseProductsForReceipt);
         }
         purchaseRegularProduct(buyProduct, promotionProduct);
-        return new PromotionApplyResult(buyProduct ,totalGetAmount, totalPromotedPrice, totalPromotedSalePrice);
+
+        return promotionApplyResult;
     }
 
     private PromotionInfo setupPromotionInfo(Promotion promotion) {
         return new PromotionInfo(promotion.getBuyAmount(), promotion.getGetAmount());
+    }
+
+    private boolean applyPromotionProcess(Product buyProduct, List<Product> purchaseProductsForReceipt, PromotionInfo promotionInfo,
+                                          Product promotionProduct, PromotionApplyResult promotionApplyResult) {
+        boolean isExtraPromotionProductApproved = true;
+        while (buyProduct.getQuantity() >= promotionInfo.getPromotionBuyAmount() && promotionProduct.getQuantity() >= promotionInfo.getPromotionTotalAmount()) {
+            if (!promotionService.applyExtraForPromo(buyProduct, purchaseProductsForReceipt, promotionInfo)) {
+                isExtraPromotionProductApproved = false;
+                break;
+            }
+            calculatePromotionTotals(buyProduct, promotionProduct, promotionInfo, promotionApplyResult);
+        }
+        return isExtraPromotionProductApproved;
+    }
+
+    private void calculatePromotionTotals(Product buyProduct, Product promotionProduct, PromotionInfo promotionInfo, PromotionApplyResult promotionApplyResult) {
+        promotionApplyResult.addTotalGetAmount(promotionInfo.getPromotionGetAmount());
+        promotionApplyResult.addTotalPromotedPrice(promotionInfo.getPromotionTotalAmount() * promotionProduct.getPrice());
+        promotionApplyResult.addTotalPromotedSalePrice(promotionInfo.getPromotionGetAmount() * promotionProduct.getPrice());
+        buyProduct.decreaseQuantity(promotionInfo.getPromotionTotalAmount());
+        promotionProduct.decreaseQuantity(promotionInfo.getPromotionTotalAmount());
     }
 
     public void purchaseRegularProduct(Product purchaseProduct, Product stock) {
