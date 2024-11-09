@@ -84,21 +84,9 @@ public class StoreController {
         List<Store> productPromotionStore = storeService.connectProductsPromotions(purchaseProducts);
         List<PromotionApplyResult> productPromotionApplyResults = new ArrayList<>();
         for (Store productPromotion : productPromotionStore) {
-            purchaseProducts(productPromotion, purchaseProductsForReceipt, productPromotionApplyResults);
+            storeService.purchaseProducts(productPromotion, purchaseProductsForReceipt, productPromotionApplyResults);
         }
         return productPromotionApplyResults;
-    }
-
-    private void purchaseProducts(Store productPromotion, List<Product> buyProductsForReceipt,
-                           List<PromotionApplyResult> productPromotionApplyResults) {
-        Product purchaseProduct = productPromotion.getProduct();
-        Promotion appliedPromotion = productPromotion.getPromotion();
-        if(appliedPromotion == null) {
-            storeService.purchaseRegularProduct(purchaseProduct, productService.getRegularProductByName(purchaseProduct.getName()));
-            return;
-        }
-        PromotionApplyResult promotionApplyResult = storeService.purchasePromotionProduct(purchaseProduct, appliedPromotion, buyProductsForReceipt);
-        productPromotionApplyResults.add(promotionApplyResult);
     }
 
     private List<Product> displayStockList() {
@@ -127,7 +115,7 @@ public class StoreController {
     }
 
     private Membership checkMembership() {
-        while(true) { //depth 줄이기
+        while(true) {
             try{
                 String getMembership = inputView.checkMembership();
                 inputValidator.validateYesOrNoType(getMembership);
@@ -144,7 +132,6 @@ public class StoreController {
 
     private int applyMembership(int nonPromotedPrice, Membership checkMembership) {
         int saleAmount = (int) (nonPromotedPrice * checkMembership.getDiscountRate());
-
         if(saleAmount > 8000) {
             saleAmount = 8000;
         }
