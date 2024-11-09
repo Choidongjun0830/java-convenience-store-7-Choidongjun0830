@@ -16,33 +16,9 @@ import store.view.InputView;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final InputView inputView;
 
-    public ProductService(ProductRepository productRepository, InputView inputView) {
+    public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
-        this.inputView = inputView;
-    }
-
-    private void parseProducts(String filePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            reader.readLine();
-            parseProduct(reader);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    private void parseProduct(BufferedReader reader) throws IOException {
-        String line;
-        while((line = reader.readLine()) != null) {
-            String[] fields = line.split(",");
-            String name = fields[0];
-            int price = Integer.parseInt(fields[1]);
-            int quantity = Integer.parseInt(fields[2]);
-            String promotion = fields.length > 3 ? fields[3] : null; // 수정하기
-            productRepository.addProduct(new Product(name, price, quantity, promotion));
-        }
     }
 
     public List<Product> getAllProducts() {
@@ -66,9 +42,6 @@ public class ProductService {
             buyProducts.add(buyProduct);
         }
         return buyProducts;
-        //유효한 입력인지 -가 맞은지
-        //상품이 재고에 있는지
-        //수량이 유효한지
     }
 
     public Product getPromotionProductByName(String name) {
@@ -98,15 +71,15 @@ public class ProductService {
 
     public int getProductPrice(String name, List<Product> stockProducts) {
         for(Product product : stockProducts) {
-            if(product.getName().equals(name)) { //프로모션 상품과 금액 다를 경우도 고려.
+            if(product.getName().equals(name)) {
                 return product.getPrice();
             }
         }
         return 0;
     }
 
-    public void increaseTotalPurchaseAmount(String name, List<Product> buyProductCopy, int increaseAmount) {
-        for (Product product : buyProductCopy) {
+    public void increaseTotalPurchaseAmount(String name, List<Product> purchaseProductsForReceipt, int increaseAmount) {
+        for (Product product : purchaseProductsForReceipt) {
             if(product.getName().equals(name)) {
                 product.increaseQuantity(increaseAmount);
             }
@@ -128,28 +101,24 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-//    public void validateStock(List<Product> purchaseProducts) {
-//        // 재고 유효성 검사
-//        List<TotalProductStock> totalProductStocks = getTotalProductStocks(purchaseProducts);
-//        for (Product product : purchaseProducts) {
-//            int stock = findStockForProduct(totalProductStocks, product);
-//            if(stock == -1) {
-//                throw new IllegalArgumentException(ExceptionMessage.NOT_EXIST_PRODUCT_EXCEPTION);
-//            }
-//            if (product.getQuantity() > stock) {
-//                throw new IllegalArgumentException(ExceptionMessage.STOCK_OVER_EXCEPTION);
-//            }
-//        }
-//    }
-
-    private int findStockForProduct(List<TotalProductStock> totalProductStocks, Product product) {
-        for (TotalProductStock totalProductStock : totalProductStocks) {
-            if(totalProductStock.getName() == product.getName()) {
-                return totalProductStock.getStock();
-            }
+    private void parseProducts(String filePath) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            reader.readLine();
+            parseProduct(reader);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
         }
-        return -1;
     }
 
-
+    private void parseProduct(BufferedReader reader) throws IOException {
+        String line;
+        while((line = reader.readLine()) != null) {
+            String[] fields = line.split(",");
+            String name = fields[0];
+            int price = Integer.parseInt(fields[1]);
+            int quantity = Integer.parseInt(fields[2]);
+            String promotion = fields.length > 3 ? fields[3] : null; // 수정하기
+            productRepository.addProduct(new Product(name, price, quantity, promotion));
+        }
+    }
 }
