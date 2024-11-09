@@ -42,9 +42,7 @@ public class PromotionService {
                 LocalDate end_date = LocalDate.parse(fields[4]);
                 promotionRepository.addPromotion(new Promotion(name, buyAmount, getAmount, start_date, end_date));
             }
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
+        } catch (IOException e) { throw new IllegalArgumentException(e); }
     }
 
     public void getAllPromotions() {
@@ -91,12 +89,12 @@ public class PromotionService {
         return !now.isBefore(promotion.getStartDate()) && !now.isAfter(promotion.getEndDate());
     }
 
-    public boolean applyExtraForPromo(Product purchaseProduct, List<Product> buyProductClone, PromotionInfo promotionInfo) {
+    public boolean applyExtraForPromo(Product purchaseProduct, List<Product> purchaseProductsForReceipt, PromotionInfo promotionInfo) {
         if(purchaseProduct.getQuantity() == promotionInfo.getPromotionBuyAmount() && purchaseProduct.getQuantity() < promotionInfo.getPromotionTotalAmount()) {;
             String response = getResponseForExtraProduct(purchaseProduct, promotionInfo.getPromotionGetAmount());
             if(response.equalsIgnoreCase("Y")) {
                 purchaseProduct.increaseQuantity(promotionInfo.getPromotionGetAmount());
-                productService.increaseTotalPurchaseAmount(purchaseProduct.getName(), buyProductClone, promotionInfo.getPromotionGetAmount());
+                productService.increaseTotalPurchaseAmount(purchaseProduct.getName(), purchaseProductsForReceipt, promotionInfo.getPromotionGetAmount());
                 return true;
             }
             return false;
