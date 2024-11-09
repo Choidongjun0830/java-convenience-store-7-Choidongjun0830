@@ -67,7 +67,7 @@ public class StoreService {
 
     public void purchaseRegularProduct(Product purchaseProduct, Product stock) {
         if(purchaseProduct.getQuantity() > 0) {
-            purchaseProductFromPromotionStock(purchaseProduct, regularProductStock);
+            if(!stock.getPromotion().isBlank()) purchaseProductFromPromotionStock(purchaseProduct, stock);
             purchaseProductFromRegularStock(purchaseProduct);
         }
     }
