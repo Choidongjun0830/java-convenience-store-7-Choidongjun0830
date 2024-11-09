@@ -54,8 +54,9 @@ public class StoreService {
             buyProduct.decreaseQuantity(promotionInfo.getPromotionTotalAmount());
             promotionProduct.decreaseQuantity(promotionInfo.getPromotionTotalAmount());
         }
-        int notPurchasedAmount = promotionService.checkPurchaseWithoutPromotion(buyProduct); //이거
-
+        if(isExtraPromotionProductApproved && buyProduct.getQuantity() > 0 && !promotion.getName().isBlank()) {
+            promotionService.checkPurchaseWithoutPromotion(buyProduct);
+        }
         purchaseRegularProduct(buyProduct, promotionProduct);
         return new PromotionApplyResult(buyProduct ,totalGetAmount, totalPromotedPrice, totalPromotedSalePrice);
     }
