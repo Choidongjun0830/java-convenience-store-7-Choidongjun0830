@@ -51,18 +51,6 @@ public class StoreController {
         } while (isNo());
     }
 
-    private boolean isNo() {
-        while(true) {
-            try {
-                String checkAdditionalPurchase = inputView.checkAdditionalPurchase();
-                inputValidator.validateYesOrNoType(checkAdditionalPurchase);
-                return !checkAdditionalPurchase.equals("N");
-            } catch (IllegalArgumentException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-    }
-
     private List<Product> getPurchaseProducts(List<Product> stockProducts) {
         while(true) {
             try {
@@ -102,6 +90,18 @@ public class StoreController {
             totalPromotedPrice += promotedPrice;
         }
         return totalPromotedPrice;
+    }
+
+    private boolean isNo() {
+        while(true) {
+            try {
+                String checkAdditionalPurchase = inputView.checkAdditionalPurchase();
+                inputValidator.validateYesOrNoType(checkAdditionalPurchase);
+                return !checkAdditionalPurchase.equals("N");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
     }
 
     private ReceiptInfo calculateReceiptInfoAndApplyMembership(List<Product> purchaseProductsForReceipt, List<Product> stockProducts, List<PromotionApplyResult> productPromotionApplyResults) {
