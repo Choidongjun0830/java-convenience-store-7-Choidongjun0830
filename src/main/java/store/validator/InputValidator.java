@@ -7,6 +7,9 @@ import store.domain.Product;
 import store.dto.TotalProductStock;
 
 public class InputValidator {
+
+    public static final List<String> POSSIBLE_RESPONSE = new ArrayList<>(List.of("Y", "N", "y", "n"));
+
     // [ ]  - , 검증 -> 정규식
     public void purchaseProductInputPatternValidate(String buyProductAmountInput) {
         // [\\[\\,\\[]
@@ -21,9 +24,8 @@ public class InputValidator {
         validatePurchaseAmountOverStock(purchaseProducts, totalProductStocks);
     }
 
-    public void validateYesOrNoType(String response) { //수정
-        List<String> possibleResponse = new ArrayList<>(List.of("Y", "N", "y", "n"));
-        if (!possibleResponse.contains(response)) {
+    public void validateYesOrNoType(String response) {
+        if (!POSSIBLE_RESPONSE.contains(response)) {
             throw new IllegalArgumentException(ExceptionMessage.INVALID_INPUT_EXCEPTION);
         }
     }
@@ -51,7 +53,7 @@ public class InputValidator {
             boolean existed = stockProducts.stream()
                     .anyMatch(stockProduct -> stockProduct.getName().equals(purchaseProductName));
             if(!existed) {
-                throw new IllegalArgumentException(new IllegalArgumentException(ExceptionMessage.NOT_EXIST_PRODUCT_EXCEPTION));
+                throw new IllegalArgumentException(ExceptionMessage.NOT_EXIST_PRODUCT_EXCEPTION);
             }
         });
     }

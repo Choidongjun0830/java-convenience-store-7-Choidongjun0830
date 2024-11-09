@@ -48,7 +48,19 @@ public class StoreController {
             ReceiptInfo receiptInfo = calculateReceiptInfoAndApplyMembership(purchaseProductsForReceipt, stockProducts,
                     productPromotionApplyResults);
             outputView.printReceipt(stockProducts, purchaseProductsForReceipt, productPromotionApplyResults, receiptInfo);
-        } while (!inputView.checkAdditionalPurchase().equals("N"));
+        } while (isNo());
+    }
+
+    private boolean isNo() {
+        while(true) {
+            try {
+                String checkAdditionalPurchase = inputView.checkAdditionalPurchase();
+                inputValidator.validateYesOrNoType(checkAdditionalPurchase);
+                return !checkAdditionalPurchase.equals("N");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
     }
 
     private List<Product> getPurchaseProducts(List<Product> stockProducts) {
@@ -85,8 +97,7 @@ public class StoreController {
             storeService.purchaseRegularProduct(purchaseProduct, productService.getRegularProductByName(purchaseProduct.getName()));
             return;
         }
-        PromotionApplyResult promotionApplyResult = storeService.purchasePromotionProduct(purchaseProduct,
-                appliedPromotion, buyProductsForReceipt);
+        PromotionApplyResult promotionApplyResult = storeService.purchasePromotionProduct(purchaseProduct, appliedPromotion, buyProductsForReceipt);
         productPromotionApplyResults.add(promotionApplyResult);
     }
 
@@ -119,7 +130,7 @@ public class StoreController {
         while(true) { //depth 줄이기
             try{
                 String getMembership = inputView.checkMembership();
-                inputValidator.yesOrNoTypeValidate(getMembership);
+                inputValidator.validateYesOrNoType(getMembership);
                 Membership checkMembership = Membership.NON_MEMBERSHIP;
                 if (getMembership.equals("Y")) {
                     checkMembership =  Membership.MEMBERSHIP;
