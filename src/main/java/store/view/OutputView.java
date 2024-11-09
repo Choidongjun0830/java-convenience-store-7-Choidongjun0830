@@ -88,7 +88,7 @@ public class OutputView {
 
     private String isQuantityZero(int quantity) {
         if (quantity == 0) {
-            return "STOCK_SHORTAGE";
+            return STOCK_SHORTAGE;
         }
         return String.valueOf(quantity) + "개";
     }
