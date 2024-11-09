@@ -29,4 +29,14 @@ public class PromotionApplyResult {
     public int getTotalPromotedSalePrice() {
         return totalPromotedSalePrice;
     }
+
+    public void addTotalGetAmount(int amount) {
+        totalGetAmount += amount;
+    }
+    public void addTotalPromotedPrice(int price) {
+        totalPromotedPrice += price;
+    }
+    public void addTotalPromotedSalePrice(int price) {
+        totalPromotedSalePrice += price;
+    }
 }
