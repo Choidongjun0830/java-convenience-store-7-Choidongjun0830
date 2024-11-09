@@ -22,6 +22,7 @@ public class InputValidator {
     public void purchaseProductValidate(List<Product> stockProducts, List<Product> purchaseProducts, List<TotalProductStock> totalProductStocks) {
         validatePurchaseProductNotExistProductList(stockProducts, purchaseProducts);
         validatePurchaseAmountOverStock(purchaseProducts, totalProductStocks);
+        validatePurchaseAmount(purchaseProducts);
     }
 
     public void validateYesOrNoType(String response) {
@@ -56,5 +57,13 @@ public class InputValidator {
                 throw new IllegalArgumentException(ExceptionMessage.NOT_EXIST_PRODUCT_EXCEPTION);
             }
         });
+    }
+
+    private void validatePurchaseAmount(List<Product> purchaseProducts) {
+        for (Product purchaseProduct : purchaseProducts) {
+            if(purchaseProduct.getQuantity() <= 0) {
+                throw new IllegalArgumentException(ExceptionMessage.PURCHASE_AMOUNT_INVALID_EXCEPTION);
+            }
+        }
     }
 }
