@@ -1,5 +1,6 @@
 package store.validator;
 
+import java.util.ArrayList;
 import java.util.List;
 import store.constant.ExceptionMessage;
 import store.domain.Product;
@@ -9,26 +10,25 @@ public class InputValidator {
     // [ ]  - , 검증 -> 정규식
     public void purchaseProductInputPatternValidate(String buyProductAmountInput) {
         // [\\[\\,\\[]
-        boolean patternMatches = buyProductAmountInput.matches("\\[(\\w+)-(\\d+)\\](,\\[(\\w+)-(\\d+)\\])*");
+        boolean patternMatches = buyProductAmountInput.matches("\\[([\\w가-힣]+)-(\\d+)\\](,\\[([\\w가-힣]+)-(\\d+)\\])*");
         if (!patternMatches) {
             throw new IllegalArgumentException(ExceptionMessage.INVALID_FORMAT_EXCEPTION);
         }
     }
 
     public void purchaseProductValidate(List<Product> stockProducts, List<Product> purchaseProducts, List<TotalProductStock> totalProductStocks) {
-        purchaseProductNameBlankValidate(stockProducts);
-        purchaseProductNotExistProductListValidate(stockProducts, purchaseProducts);
-        validatePositivePurchaseQuantity(stockProducts);
-        purchaseAmountOverStockValidate(purchaseProducts, totalProductStocks);
+        validatePurchaseProductNotExistProductList(stockProducts, purchaseProducts);
+        validatePurchaseAmountOverStock(purchaseProducts, totalProductStocks);
     }
 
-    public void yesOrNoTypeValidate(String response) {
-        for(char c: response.toCharArray()) {
-            if(!Character.isLetter(c)) throw new IllegalArgumentException(ExceptionMessage.INVALID_FORMAT_EXCEPTION);
+    public void validateYesOrNoType(String response) { //수정
+        List<String> possibleResponse = new ArrayList<>(List.of("Y", "N", "y", "n"));
+        if (!possibleResponse.contains(response)) {
+            throw new IllegalArgumentException(ExceptionMessage.INVALID_INPUT_EXCEPTION);
         }
     }
 
-    private void purchaseAmountOverStockValidate(List<Product> purchaseProducts, List<TotalProductStock> totalProductStocks) {
+    private void validatePurchaseAmountOverStock(List<Product> purchaseProducts, List<TotalProductStock> totalProductStocks) {
         purchaseProducts.forEach(purchaseProduct -> {
             String purchaseProductName = purchaseProduct.getName();
             int purchaseQuantity = purchaseProduct.getQuantity();
@@ -44,7 +44,7 @@ public class InputValidator {
         });
     }
 
-    private void purchaseProductNotExistProductListValidate(List<Product> stockProducts, List<Product> purchaseProducts) {
+    private void validatePurchaseProductNotExistProductList(List<Product> stockProducts, List<Product> purchaseProducts) {
         purchaseProducts.forEach(purchaseProduct -> {
             String purchaseProductName = purchaseProduct.getName();
 
@@ -54,25 +54,5 @@ public class InputValidator {
                 throw new IllegalArgumentException(new IllegalArgumentException(ExceptionMessage.NOT_EXIST_PRODUCT_EXCEPTION));
             }
         });
-    }
-
-    private void purchaseProductNameBlankValidate(List<Product> purchaseProducts) {
-        for (Product purchaseProduct : purchaseProducts) {
-            if (purchaseProduct.getName().isBlank()) {
-                throw new IllegalArgumentException(ExceptionMessage.PURCHASE_NAME_BLANK_EXCEPTION);
-            }
-        }
-    }
-
-    private void validatePositivePurchaseQuantity(List<Product> purchaseProducts) {
-        for (Product purchaseProduct : purchaseProducts) {
-            if (purchaseProduct.getQuantity() < 1) {
-                throw new IllegalArgumentException(ExceptionMessage.PURCHASE_AMOUNT_INVALID_EXCEPTION);
-            }
-        }
-    }
-
-    private void validatePurchaseQuantityType(List<Product> purchaseProducts) {
-
     }
 }
