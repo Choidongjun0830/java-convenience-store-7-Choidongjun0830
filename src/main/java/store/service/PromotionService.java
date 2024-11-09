@@ -114,12 +114,27 @@ public class PromotionService {
         }
     }
 
-    public void checkPurchaseWithoutPromotion(Product buyProduct) {
+    public void checkPurchaseWithoutPromotion(Product buyProduct, List<Product> purchaseProductsForReceipt) {
         if(buyProduct.getQuantity() > 0) {
-            String checkPurchaseWithoutPromotion = inputView.checkPurchaseWithoutPromotion(buyProduct.getName(), buyProduct.getQuantity());
+            String checkPurchaseWithoutPromotion = getResponsePurchaseWithoutPromotion(buyProduct);
             if(checkPurchaseWithoutPromotion.equalsIgnoreCase("N")) {
+                int decreaseQuantity = buyProduct.getQuantity();
                 buyProduct.decreaseQuantity(buyProduct.getQuantity());
+                productService.decreaseTotalPurchaseAmount(buyProduct.getName(), purchaseProductsForReceipt, decreaseQuantity);
             }
         }
+    }
+
+    private String getResponsePurchaseWithoutPromotion(Product buyProduct) {
+        while(true){
+            try{
+                String checkPurchaseWithoutPromotion = inputView.checkPurchaseWithoutPromotion(buyProduct.getName(), buyProduct.getQuantity());
+                inputValidator.validateYesOrNoType(checkPurchaseWithoutPromotion);
+                return checkPurchaseWithoutPromotion;
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
     }
 }
