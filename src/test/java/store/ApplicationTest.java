@@ -65,7 +65,7 @@ class ApplicationTest extends NsTest {
     void 프로모션_재고_부족() {
         assertSimpleTest(() -> {
             run("[콜라-4]", "N", "N", "N");
-            assertThat(output().replaceAll("\\s", "")).contains("내실돈3,000");
+            assertThat(output().replaceAll("\\s", "")).contains("내실돈2,000");
         });
     }
 
@@ -110,12 +110,21 @@ class ApplicationTest extends NsTest {
     }
 
     @Test
-    void 증정품_구매하지_않는_경우() {
+    void 증정품_구매하지_않는_경우1() {
         assertSimpleTest(() -> {
             run("[사이다-2]", "N", "Y","N");
             assertThat(output().replaceAll("\\s", "")).contains("내실돈1,400");
         });
     }
+
+    @Test
+    void 증정품_구매하지_않는_경우2() {
+        assertSimpleTest(() -> {
+            run("[콜라-10]", "N", "N", "N");
+            assertThat(output().replaceAll("\\s", "")).contains("내실돈6,000");
+        });
+    }
+
 
     @Override
     public void runMain() {
