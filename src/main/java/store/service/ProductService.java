@@ -86,6 +86,14 @@ public class ProductService {
         }
     }
 
+    public void decreaseTotalPurchaseAmount(String name, List<Product> purchaseProductsForReceipt, int decreaseAmount) {
+        for (Product product : purchaseProductsForReceipt) {
+            if(product.getName().equals(name)) {
+                product.decreaseQuantity(decreaseAmount);
+            }
+        }
+    }
+
     public List<TotalProductStock> getTotalProductStocks(List<Product> buyProducts) {
         return buyProducts.stream()
                 .map(buyProduct -> {
