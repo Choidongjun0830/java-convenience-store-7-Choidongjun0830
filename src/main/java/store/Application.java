@@ -13,19 +13,16 @@ import store.view.OutputView;
 
 public class Application {
     public static void main(String[] args) {
-
         ProductRepository productRepository = new ProductRepository();
         PromotionRepository promotionRepository = new PromotionRepository();
-        MoneyFormatter moneyFormatter = new MoneyFormatter();
 
         InputView inputView = new InputView();
-        OutputView outputView = new OutputView(moneyFormatter);
+        OutputView outputView = new OutputView();
         InputValidator inputValidator = new InputValidator();
 
-        ProductService productService = new ProductService(productRepository, inputView);
+        ProductService productService = new ProductService(productRepository);
         PromotionService promotionService = new PromotionService(promotionRepository, productService, inputView, inputValidator);
         StoreService storeService = new StoreService(productService, promotionService);
-
 
         StoreController storeController = new StoreController(inputView, outputView, productService, promotionService, storeService, inputValidator);
         storeController.startProcess();
