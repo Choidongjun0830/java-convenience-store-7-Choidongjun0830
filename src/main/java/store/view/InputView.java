@@ -10,7 +10,7 @@ public class InputView {
     private static final String ADDITIONAL_QUANTITY_QUERY_MESSAGE = "현재 %s은(는) %d개를 무료로 더 받을 수 있습니다. 추가하시겠습니까? (Y/N)";
 
     public String getBuyProductAmount() {
-        return Console.readLine();
+        return Console.readLine().trim();
     }
 
     public String checkMembership() {
