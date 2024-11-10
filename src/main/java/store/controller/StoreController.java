@@ -108,8 +108,11 @@ public class StoreController {
         int totalProductPrice = productService.getTotalProductPrice(purchaseProductsForReceipt, stockProducts); //상품 총액
         int totalPromotedPrice = getTotalPromotedPrice(productPromotionApplyResults); //프로모션으로 할인된 가격
 
-        Membership membership = checkMembership();
-        int membershipDiscountAmount = applyMembership(totalProductPrice - totalPromotedPrice, membership);
+        int membershipDiscountAmount = 0;
+        if(totalProductPrice != 0 && totalProductPrice - totalPromotedPrice > 0){
+            Membership membership = checkMembership();
+            membershipDiscountAmount = applyMembership(totalProductPrice - totalPromotedPrice, membership);
+        }
 
         return new ReceiptInfo(totalProductPrice, totalPromotedPrice, membershipDiscountAmount);
     }
@@ -137,7 +140,4 @@ public class StoreController {
         }
         return -saleAmount;
     }
-
-
-
 }
