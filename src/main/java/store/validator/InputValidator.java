@@ -13,7 +13,7 @@ public class InputValidator {
     // [ ]  - , 검증 -> 정규식
     public void purchaseProductInputPatternValidate(String buyProductAmountInput) {
         // [\\[\\,\\[]
-        boolean patternMatches = buyProductAmountInput.matches("\\[([\\w가-힣]+)-(\\d+)\\](,\\[([\\w가-힣]+)-(\\d+)\\])*");
+        boolean patternMatches = buyProductAmountInput.matches("\\[\\s*([\\w가-힣]+)\\s*-\\s*(\\d+)\\s*\\](\\s*,\\s*\\[\\s*([\\w가-힣]+)\\s*-\\s*(\\d+)\\s*\\])*\\s*");
         if (!patternMatches) {
             throw new IllegalArgumentException(ExceptionMessage.INVALID_FORMAT_EXCEPTION);
         }
