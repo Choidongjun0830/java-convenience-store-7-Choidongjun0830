@@ -10,9 +10,7 @@ public class InputValidator {
 
     public static final List<String> POSSIBLE_RESPONSE = new ArrayList<>(List.of("Y", "N", "y", "n"));
 
-    // [ ]  - , 검증 -> 정규식
     public void purchaseProductInputPatternValidate(String buyProductAmountInput) {
-        // [\\[\\,\\[]
         boolean patternMatches = buyProductAmountInput.matches("\\[\\s*([\\w가-힣]+)\\s*-\\s*(\\d+)\\s*\\](\\s*,\\s*\\[\\s*([\\w가-힣]+)\\s*-\\s*(\\d+)\\s*\\])*\\s*");
         if (!patternMatches) {
             throw new IllegalArgumentException(ExceptionMessage.INVALID_FORMAT_EXCEPTION);
