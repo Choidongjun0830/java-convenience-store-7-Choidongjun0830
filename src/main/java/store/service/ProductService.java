@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import store.constant.ExceptionMessage;
 import store.domain.Product;
 import store.dto.TotalProductStock;
@@ -31,27 +32,9 @@ public class ProductService {
     public List<Product> parsePurchaseProductFromInput(String buyProductAmountsInput) {
         String[] buyProductAmounts = buyProductAmountsInput.split(",");
 
-        for (int i = 0; i < buyProductAmounts.length; i++) {
-            buyProductAmounts[i] = buyProductAmounts[i].replaceAll("[\\[\\]]", "").trim();
-        }
+        replaceSquareBracketsToBlank(buyProductAmounts);
 
-        List<Product> buyProducts = new ArrayList<>();
-        for (String buyProductAmount : buyProductAmounts) {
-            String[] splitProductAmount = buyProductAmount.split("-");
-            Product buyProduct = new Product(splitProductAmount[0].trim(), Integer.parseInt(splitProductAmount[1].trim()));
-            boolean productExists = false;
-            for (Product product : buyProducts) {
-                if (product.getName().equals(buyProduct.getName())) {
-                    product.increaseQuantity(buyProduct.getQuantity());
-                    productExists = true;
-                    break;
-                }
-            }
-            if (!productExists) {
-                buyProducts.add(buyProduct);
-            }
-        }
-        return buyProducts;
+        return setupBuyProducts(buyProductAmounts);
     }
 
     public Product getPromotionProductByName(String name) {
@@ -105,18 +88,43 @@ public class ProductService {
     }
 
     public List<TotalProductStock> getTotalProductStocks(List<Product> buyProducts) {
-        return buyProducts.stream()
-                .map(buyProduct -> {
-                    String name = buyProduct.getName();
-                    int totalQuantity = Optional.ofNullable(getPromotionProductByName(name))
-                            .map(Product::getQuantity)
-                            .orElse(0)
-                    + Optional.ofNullable(getRegularProductByName(name))
-                            .map(Product::getQuantity)
-                            .orElse(0);
-                    return new TotalProductStock(name, totalQuantity);
-                })
+        return getTotalProductStock(buyProducts)
                 .collect(Collectors.toList());
+    }
+
+    private static List<Product> setupBuyProducts(String[] buyProductAmounts) {
+        List<Product> buyProducts = new ArrayList<>();
+        for (String buyProductAmount : buyProductAmounts) {
+            String[] splitProductAmount = buyProductAmount.split("-");
+            Product buyProduct = new Product(splitProductAmount[0].trim(), Integer.parseInt(splitProductAmount[1].trim()));
+            addBuyProduct(buyProducts, buyProduct);
+        }
+        return buyProducts;
+    }
+
+    private static void addBuyProduct(List<Product> buyProducts, Product buyProduct) {
+        boolean productExists = false;
+        productExists = addBuyProductAmountIfExist(buyProducts, buyProduct, productExists);
+        if (!productExists) {
+            buyProducts.add(buyProduct);
+        }
+    }
+
+    private static boolean addBuyProductAmountIfExist(List<Product> buyProducts, Product buyProduct, boolean productExists) {
+        for (Product product : buyProducts) {
+            if (product.getName().equals(buyProduct.getName())) {
+                product.increaseQuantity(buyProduct.getQuantity());
+                productExists = true;
+                break;
+            }
+        }
+        return productExists;
+    }
+
+    private static void replaceSquareBracketsToBlank(String[] buyProductAmounts) {
+        for (int i = 0; i < buyProductAmounts.length; i++) {
+            buyProductAmounts[i] = buyProductAmounts[i].replaceAll("[\\[\\]]", "").trim();
+        }
     }
 
     private void parseProducts(String filePath) {
@@ -138,5 +146,17 @@ public class ProductService {
             String promotion = fields.length > 3 ? fields[3] : null; // 수정하기
             productRepository.addProduct(new Product(name, price, quantity, promotion));
         }
+    }
+
+    private Stream<TotalProductStock> getTotalProductStock(List<Product> buyProducts) {
+        return buyProducts.stream().map(buyProduct -> {
+            String name = buyProduct.getName();
+            int totalQuantity = Optional.ofNullable(getPromotionProductByName(name))
+                    .map(Product::getQuantity)
+                    .orElse(0)
+                    + Optional.ofNullable(getRegularProductByName(name))
+                    .map(Product::getQuantity)
+                    .orElse(0);
+            return new TotalProductStock(name, totalQuantity);});
     }
 }

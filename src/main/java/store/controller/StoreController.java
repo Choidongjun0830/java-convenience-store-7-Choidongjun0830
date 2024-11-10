@@ -22,7 +22,6 @@ public class StoreController {
     private final InputView inputView;
     private final OutputView outputView;
     private final ProductService productService;
-    private final PromotionService promotionService;
     private final StoreService storeService;
     private final InputValidator inputValidator;
     private final MembershipService membershipService;
@@ -33,7 +32,6 @@ public class StoreController {
         this.inputView = inputView;
         this.outputView = outputView;
         this.productService = productService;
-        this.promotionService = promotionService;
         this.storeService = storeService;
         this.inputValidator = inputValidator;
         this.membershipService = membershipService;
@@ -43,14 +41,10 @@ public class StoreController {
         do {
             List<Product> stockProducts = displayStockList();
             List<Product> purchaseProducts = getPurchaseProducts(stockProducts);
-            //영수증 출력을 위한 복제본 생성
             List<Product> purchaseProductsForReceipt = productService.cloneProductList(purchaseProducts);
-            //프로모션 적용 가능 여부 확인 후 적용 + 구매
-            List<PromotionApplyResult> productPromotionApplyResults = getPurchaseResults(purchaseProducts,
-                    purchaseProductsForReceipt);
-            //영수증에서 사용하는 정보 계산 및 멤버십 적용
-            ReceiptInfo receiptInfo = calculateReceiptInfoAndApplyMembership(purchaseProductsForReceipt, stockProducts,
-                    productPromotionApplyResults);
+            List<PromotionApplyResult> productPromotionApplyResults = getPurchaseResults(purchaseProducts, purchaseProductsForReceipt);
+
+            ReceiptInfo receiptInfo = calculateReceiptInfoAndApplyMembership(purchaseProductsForReceipt, stockProducts, productPromotionApplyResults);
             outputView.printReceipt(stockProducts, purchaseProductsForReceipt, productPromotionApplyResults, receiptInfo);
         } while (isNo());
     }
@@ -58,17 +52,21 @@ public class StoreController {
     private List<Product> getPurchaseProducts(List<Product> stockProducts) {
         while(true) {
             try {
-                String buyProductAmountInput = inputView.getBuyProductAmount();
-                inputValidator.purchaseProductInputPatternValidate(buyProductAmountInput);
-
-                List<Product> purchaseProducts = productService.parsePurchaseProductFromInput(buyProductAmountInput);
-                List<TotalProductStock> totalProductStocks = productService.getTotalProductStocks(purchaseProducts);
-                inputValidator.purchaseProductValidate(stockProducts, purchaseProducts, totalProductStocks);
-                return purchaseProducts;
+                return getProducts(stockProducts);
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
             }
         }
+    }
+
+    private List<Product> getProducts(List<Product> stockProducts) {
+        String buyProductAmountInput = inputView.getBuyProductAmount();
+        inputValidator.purchaseProductInputPatternValidate(buyProductAmountInput);
+
+        List<Product> purchaseProducts = productService.parsePurchaseProductFromInput(buyProductAmountInput);
+        List<TotalProductStock> totalProductStocks = productService.getTotalProductStocks(purchaseProducts);
+        inputValidator.purchaseProductValidate(stockProducts, purchaseProducts, totalProductStocks);
+        return purchaseProducts;
     }
 
     private List<PromotionApplyResult> getPurchaseResults(List<Product> purchaseProducts,
@@ -114,34 +112,10 @@ public class StoreController {
 
         int membershipDiscountAmount = 0;
         if(totalProductPrice != 0 && totalProductPrice - totalPromotedPrice > 0){
-            Membership membership = checkMembership();
-            membershipDiscountAmount = applyMembership(totalProductPrice - totalPromotedPrice, membership);
+            Membership membership = membershipService.checkMembership();
+            membershipDiscountAmount = membershipService.applyMembership(totalProductPrice - totalPromotedPrice, membership);
         }
-
         return new ReceiptInfo(totalProductPrice, totalPromotedPrice, membershipDiscountAmount);
     }
 
-    private Membership checkMembership() {
-        while(true) {
-            try{
-                String getMembership = inputView.checkMembership();
-                inputValidator.validateYesOrNoType(getMembership);
-                Membership checkMembership = Membership.NON_MEMBERSHIP;
-                if (getMembership.equals("Y")) {
-                    checkMembership =  Membership.MEMBERSHIP;
-                }
-                return checkMembership;
-            } catch (IllegalArgumentException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-    }
-
-    private int applyMembership(int nonPromotedPrice, Membership checkMembership) {
-        int saleAmount = (int) (nonPromotedPrice * checkMembership.getDiscountRate());
-        if(saleAmount > 8000) {
-            saleAmount = 8000;
-        }
-        return -saleAmount;
-    }
 }

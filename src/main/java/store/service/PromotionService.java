@@ -35,12 +35,7 @@ public class PromotionService {
             reader.readLine();
             while((line = reader.readLine()) != null) {
                 String[] fields = line.split(",");
-                String name = fields[0];
-                int buyAmount = Integer.parseInt(fields[1]);
-                int getAmount = Integer.parseInt(fields[2]);
-                LocalDate start_date = LocalDate.parse(fields[3]);
-                LocalDate end_date = LocalDate.parse(fields[4]);
-                promotionRepository.addPromotion(new Promotion(name, buyAmount, getAmount, start_date, end_date));
+                addPromotionInRepository(fields);
             }
         } catch (IOException e) { throw new IllegalArgumentException(e); }
     }
@@ -61,13 +56,37 @@ public class PromotionService {
             String name = buyProduct.getName();
             Product promotionProduct = productService.getPromotionProductByName(name);
 
-            if (promotionProduct != null) {
-                String promotion = promotionProduct.getPromotion();
-                Promotion activePromotion = getActivePromotion(promotion);
-                putActivePromotion(activePromotion, activePromotions, name);
-            }
+            getActivePromotionProduct(promotionProduct, activePromotions, name);
         }
         return activePromotions;
+    }
+
+    public void checkPurchaseWithoutPromotion(Product buyProduct, List<Product> purchaseProductsForReceipt) {
+        if(buyProduct.getQuantity() > 0) {
+            String checkPurchaseWithoutPromotion = getResponsePurchaseWithoutPromotion(buyProduct);
+            if(checkPurchaseWithoutPromotion.equalsIgnoreCase("N")) {
+                int decreaseQuantity = buyProduct.getQuantity();
+                buyProduct.decreaseQuantity(buyProduct.getQuantity());
+                productService.decreaseTotalPurchaseAmount(buyProduct.getName(), purchaseProductsForReceipt, decreaseQuantity);
+            }
+        }
+    }
+
+    private void addPromotionInRepository(String[] fields) {
+        String name = fields[0];
+        int buyAmount = Integer.parseInt(fields[1]);
+        int getAmount = Integer.parseInt(fields[2]);
+        LocalDate start_date = LocalDate.parse(fields[3]);
+        LocalDate end_date = LocalDate.parse(fields[4]);
+        promotionRepository.addPromotion(new Promotion(name, buyAmount, getAmount, start_date, end_date));
+    }
+
+    private void getActivePromotionProduct(Product promotionProduct, Map<String, Promotion> activePromotions, String name) {
+        if (promotionProduct != null) {
+            String promotion = promotionProduct.getPromotion();
+            Promotion activePromotion = getActivePromotion(promotion);
+            putActivePromotion(activePromotion, activePromotions, name);
+        }
     }
 
     private static void putActivePromotion(Promotion activePromotion, Map<String, Promotion> activePromotions, String name) {
@@ -96,21 +115,8 @@ public class PromotionService {
                 purchaseProduct.increaseQuantity(promotionInfo.getPromotionGetAmount());
                 productService.increaseTotalPurchaseAmount(purchaseProduct.getName(), purchaseProductsForReceipt, promotionInfo.getPromotionGetAmount());
                 return true;
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public void checkPurchaseWithoutPromotion(Product buyProduct, List<Product> purchaseProductsForReceipt) {
-        if(buyProduct.getQuantity() > 0) {
-            String checkPurchaseWithoutPromotion = getResponsePurchaseWithoutPromotion(buyProduct);
-            if(checkPurchaseWithoutPromotion.equalsIgnoreCase("N")) {
-                int decreaseQuantity = buyProduct.getQuantity();
-                buyProduct.decreaseQuantity(buyProduct.getQuantity());
-                productService.decreaseTotalPurchaseAmount(buyProduct.getName(), purchaseProductsForReceipt, decreaseQuantity);
-            }
-        }
+            } return false;
+        } return true;
     }
 
     private String getResponseForExtraProduct(Product buyProduct, int promotionGetAmount) {
@@ -135,6 +141,5 @@ public class PromotionService {
                 System.out.println(e.getMessage());
             }
         }
-
     }
 }

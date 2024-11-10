@@ -33,16 +33,19 @@ public class InputValidator {
         purchaseProducts.forEach(purchaseProduct -> {
             String purchaseProductName = purchaseProduct.getName();
             int purchaseQuantity = purchaseProduct.getQuantity();
-
-            totalProductStocks.stream()
-                    .filter(totalProductStock -> totalProductStock.getName().equals(purchaseProductName))
-                    .findFirst()
-                    .ifPresent(totalProductStock -> {
-                        if (purchaseQuantity > totalProductStock.getStock()) {
-                            throw new IllegalArgumentException(ExceptionMessage.STOCK_OVER_EXCEPTION);
-                        }
-                    });
+            validateOverStockProcess(totalProductStocks, purchaseProductName, purchaseQuantity);
         });
+    }
+
+    private static void validateOverStockProcess(List<TotalProductStock> totalProductStocks, String purchaseProductName, int purchaseQuantity) {
+        totalProductStocks.stream()
+                .filter(totalProductStock -> totalProductStock.getName().equals(purchaseProductName))
+                .findFirst()
+                .ifPresent(totalProductStock -> {
+                    if (purchaseQuantity > totalProductStock.getStock()) {
+                        throw new IllegalArgumentException(ExceptionMessage.STOCK_OVER_EXCEPTION);
+                    }
+                });
     }
 
     private void validatePurchaseProductNotExistProductList(List<Product> stockProducts, List<Product> purchaseProducts) {
