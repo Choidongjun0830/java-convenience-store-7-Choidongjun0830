@@ -102,6 +102,17 @@ public class PromotionService {
         return true;
     }
 
+    public void checkPurchaseWithoutPromotion(Product buyProduct, List<Product> purchaseProductsForReceipt) {
+        if(buyProduct.getQuantity() > 0) {
+            String checkPurchaseWithoutPromotion = getResponsePurchaseWithoutPromotion(buyProduct);
+            if(checkPurchaseWithoutPromotion.equalsIgnoreCase("N")) {
+                int decreaseQuantity = buyProduct.getQuantity();
+                buyProduct.decreaseQuantity(buyProduct.getQuantity());
+                productService.decreaseTotalPurchaseAmount(buyProduct.getName(), purchaseProductsForReceipt, decreaseQuantity);
+            }
+        }
+    }
+
     private String getResponseForExtraProduct(Product buyProduct, int promotionGetAmount) {
         while(true) {
             try {
@@ -110,17 +121,6 @@ public class PromotionService {
                 return response;
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
-            }
-        }
-    }
-
-    public void checkPurchaseWithoutPromotion(Product buyProduct, List<Product> purchaseProductsForReceipt) {
-        if(buyProduct.getQuantity() > 0) {
-            String checkPurchaseWithoutPromotion = getResponsePurchaseWithoutPromotion(buyProduct);
-            if(checkPurchaseWithoutPromotion.equalsIgnoreCase("N")) {
-                int decreaseQuantity = buyProduct.getQuantity();
-                buyProduct.decreaseQuantity(buyProduct.getQuantity());
-                productService.decreaseTotalPurchaseAmount(buyProduct.getName(), purchaseProductsForReceipt, decreaseQuantity);
             }
         }
     }

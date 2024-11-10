@@ -91,5 +91,4 @@ public class OutputView {
         }
         return -totalPromotedPrice;
     }
-
 }
