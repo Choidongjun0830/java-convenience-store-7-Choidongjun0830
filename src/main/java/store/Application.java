@@ -3,6 +3,7 @@ package store;
 import store.controller.StoreController;
 import store.repository.ProductRepository;
 import store.repository.PromotionRepository;
+import store.service.MembershipService;
 import store.service.ProductService;
 import store.service.PromotionService;
 import store.service.StoreService;
@@ -23,8 +24,9 @@ public class Application {
         ProductService productService = new ProductService(productRepository);
         PromotionService promotionService = new PromotionService(promotionRepository, productService, inputView, inputValidator);
         StoreService storeService = new StoreService(productService, promotionService);
+        MembershipService membershipService = new MembershipService(inputView, inputValidator);
 
-        StoreController storeController = new StoreController(inputView, outputView, productService, promotionService, storeService, inputValidator);
+        StoreController storeController = new StoreController(inputView, outputView, productService, storeService, inputValidator, membershipService);
         storeController.startProcess();
     }
 }

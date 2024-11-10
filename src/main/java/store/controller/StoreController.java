@@ -9,6 +9,7 @@ import store.dto.PromotionApplyResult;
 import store.dto.ReceiptInfo;
 import store.dto.TotalProductStock;
 import store.enumerate.Membership;
+import store.service.MembershipService;
 import store.service.ProductService;
 import store.service.PromotionService;
 import store.service.StoreService;
@@ -24,15 +25,18 @@ public class StoreController {
     private final PromotionService promotionService;
     private final StoreService storeService;
     private final InputValidator inputValidator;
+    private final MembershipService membershipService;
 
     public StoreController(InputView inputView, OutputView outputView, ProductService productService,
-                           PromotionService promotionService, StoreService storeService, InputValidator inputValidator) {
+                           StoreService storeService, InputValidator inputValidator,
+                           MembershipService membershipService) {
         this.inputView = inputView;
         this.outputView = outputView;
         this.productService = productService;
         this.promotionService = promotionService;
         this.storeService = storeService;
         this.inputValidator = inputValidator;
+        this.membershipService = membershipService;
     }
 
     public void startProcess() {
