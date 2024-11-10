@@ -15,22 +15,22 @@ public class InputView {
 
     public String checkMembership() {
         System.out.println(MEMBERSHIP_DISCOUNT_QUERY_MESSAGE);
-        return Console.readLine();
+        return Console.readLine().trim();
     }
 
     public String checkAdditionalPurchase() {
         System.out.println(ADDITIONAL_PURCHASE_QUERY_MESSAGE);
-        return Console.readLine();
+        return Console.readLine().trim();
     }
 
     public String checkPurchaseWithoutPromotion(String product, int quantity) {
         System.out.println(String.format(WITHOUT_PROMOTION_QUERY_MESSAGE, product, quantity));
-        return Console.readLine();
+        return Console.readLine().trim();
     }
 
     public String checkAdditionalQuantity(String product, int quantity) {
         System.out.println(String.format(ADDITIONAL_QUANTITY_QUERY_MESSAGE, product, quantity));
-        return Console.readLine();
+        return Console.readLine().trim();
     }
 
 }
