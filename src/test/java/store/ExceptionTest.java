@@ -91,6 +91,14 @@ class ExceptionTest extends NsTest {
         });
     }
 
+    @Test
+    void 예외_테스트_중복_상품_주문_재고_초과() {
+        assertSimpleTest(() -> {
+            runException("[사이다-3],[사이다-15]");
+            assertThat(output()).contains(ExceptionMessage.STOCK_OVER_EXCEPTION);
+        });
+    }
+
     @Override
     public void runMain() {
         Application.main(new String[]{});
