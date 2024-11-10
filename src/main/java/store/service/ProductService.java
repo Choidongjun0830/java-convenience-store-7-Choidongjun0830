@@ -39,7 +39,17 @@ public class ProductService {
         for (String buyProductAmount : buyProductAmounts) {
             String[] splitProductAmount = buyProductAmount.split("-");
             Product buyProduct = new Product(splitProductAmount[0].trim(), Integer.parseInt(splitProductAmount[1].trim()));
-            buyProducts.add(buyProduct);
+            boolean productExists = false;
+            for (Product product : buyProducts) {
+                if (product.getName().equals(buyProduct.getName())) {
+                    product.increaseQuantity(buyProduct.getQuantity());
+                    productExists = true;
+                    break;
+                }
+            }
+            if (!productExists) {
+                buyProducts.add(buyProduct);
+            }
         }
         return buyProducts;
     }
