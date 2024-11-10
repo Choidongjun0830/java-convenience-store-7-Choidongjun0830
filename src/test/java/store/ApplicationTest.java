@@ -72,7 +72,7 @@ class ApplicationTest extends NsTest {
     @Test
     void 프로모션_구매_수량_부족_1_플러스_1() {
         assertSimpleTest(() -> {
-            run("[오렌지주스-3]", "Y", "Y", "N");
+            run("[오렌지주스-3]", "Y", "N");
             assertThat(output().replaceAll("\\s", "")).contains("내실돈3,600");
         });
     }
@@ -80,7 +80,7 @@ class ApplicationTest extends NsTest {
     @Test
     void 프로모션_구매_수량_부족_2_플러스_1() {
         assertSimpleTest(() -> {
-            run("[콜라-2]", "Y", "Y", "N");
+            run("[콜라-2]", "Y", "N");
             assertThat(output().replaceAll("\\s", "")).contains("내실돈2,000");
         });
     }
@@ -96,7 +96,7 @@ class ApplicationTest extends NsTest {
     @Test
     void 전체_예시_테스트() {
         assertSimpleTest(() -> {
-            run("[콜라-3],[에너지바-5]", "Y", "Y", "[콜라-10]", "Y", "N", "Y", "[오렌지주스-1]", "Y", "Y", "N");
+            run("[콜라-3],[에너지바-5]", "Y", "Y", "[콜라-10]", "Y", "N", "Y", "[오렌지주스-1]", "Y", "N");
             assertThat(output().replaceAll("\\s", "")).contains("내실돈9,000","내실돈8,000","내실돈1,800");
         });
     }
