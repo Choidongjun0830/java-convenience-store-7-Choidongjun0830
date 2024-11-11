@@ -104,8 +104,16 @@ class ApplicationTest extends NsTest {
     @Test
     void 기간에_해당하지_않는_프로모션_적용() {
         assertNowTest(() -> {
-            run("[감자칩-2]", "N", "N");
+            run("[감자칩-2]", "N", "Y");
             assertThat(output().replaceAll("\\s", "")).contains("내실돈3,000");
+        }, LocalDate.of(2024, 2, 1).atStartOfDay());
+    }
+
+    @Test
+    void 기간에_해당하지_않는_프로모션_적용_재고_초과() {
+        assertNowTest(() -> {
+            run("[감자칩-7]", "N", "Y");
+            assertThat(output());
         }, LocalDate.of(2024, 2, 1).atStartOfDay());
     }
 
