@@ -34,7 +34,9 @@ public class OutputView {
         System.out.println(OutputViewMessage.RECEIPT_HEADER);
         int totalAllProductQuantity = printPurchaseProducts(stockProducts, buyProducts);
 
-        printPromotionProducts(productPromotionApplyResults);
+        if(productPromotionApplyResults.size() > 0) {
+            printPromotionProducts(productPromotionApplyResults);
+        }
         int totalPromotedPrice = getTotalPromotedPrice(productPromotionApplyResults);
         printTotalPurchaseResult(receiptInfo.getTotalProductPrice(), receiptInfo.getMembershipSaleAmount(), totalAllProductQuantity, totalPromotedPrice);
     }
