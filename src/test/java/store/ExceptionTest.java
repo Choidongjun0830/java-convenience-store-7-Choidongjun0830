@@ -99,6 +99,14 @@ class ExceptionTest extends NsTest {
         });
     }
 
+    @Test
+    void 기간에_해당하지_않는_프로모션_적용_재고_초과() {
+        assertNowTest(() -> {
+            run("[감자칩-7]", "[감자칩-2]", "N", "N");
+            assertThat(output()).contains(ExceptionMessage.STOCK_OVER_EXCEPTION);
+        }, LocalDate.of(2024, 2, 1).atStartOfDay());
+    }
+
     @Override
     public void runMain() {
         Application.main(new String[]{});
