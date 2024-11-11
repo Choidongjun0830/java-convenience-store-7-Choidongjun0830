@@ -31,6 +31,7 @@ public class OutputView {
                              List<Product> buyProducts,
                              List<PromotionApplyResult> productPromotionApplyResults,
                              ReceiptInfo receiptInfo) {
+        if(receiptInfo.getTotalProductPrice() == 0) return;
         System.out.println(OutputViewMessage.RECEIPT_HEADER);
         int totalAllProductQuantity = printPurchaseProducts(stockProducts, buyProducts);
 
