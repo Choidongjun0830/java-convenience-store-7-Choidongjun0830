@@ -42,15 +42,6 @@ public class Product implements Cloneable{
         return productType.equals(ProductType.PROMOTION);
     }
 
-    private String isPromotionNull(String promotion) {
-        if (promotion.equals("null")) {
-            this.productType = ProductType.REGULAR;
-            return "";
-        }
-        this.productType = ProductType.PROMOTION;
-        return promotion;
-    }
-
     public void increaseQuantity(int amount) {
         this.quantity += amount;
     }
@@ -64,4 +55,12 @@ public class Product implements Cloneable{
         return new Product(this.name, this.quantity);
     }
 
+    private String isPromotionNull(String promotion) {
+        if (promotion.equals("null")) {
+            this.productType = ProductType.REGULAR;
+            return "";
+        }
+        this.productType = ProductType.PROMOTION;
+        return promotion;
+    }
 }

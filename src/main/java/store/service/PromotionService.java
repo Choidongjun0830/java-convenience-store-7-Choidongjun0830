@@ -69,6 +69,17 @@ public class PromotionService {
         return false;
     }
 
+    public boolean applyExtraForPromo(Product purchaseProduct, List<Product> purchaseProductsForReceipt, PromotionInfo promotionInfo) {
+        if(purchaseProduct.getQuantity() == promotionInfo.getPromotionBuyAmount() && purchaseProduct.getQuantity() < promotionInfo.getPromotionTotalAmount()) {;
+            String response = getResponseForExtraProduct(purchaseProduct, promotionInfo.getPromotionGetAmount());
+            if(response.equalsIgnoreCase("Y")) {
+                purchaseProduct.increaseQuantity(promotionInfo.getPromotionGetAmount());
+                productService.increaseTotalPurchaseAmount(purchaseProduct.getName(), purchaseProductsForReceipt, promotionInfo.getPromotionGetAmount());
+                return true;
+            } return false;
+        } return true;
+    }
+
     private void parsePromotion(String filePath) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
@@ -109,17 +120,6 @@ public class PromotionService {
             return promotion;
         }
         return null;
-    }
-
-    public boolean applyExtraForPromo(Product purchaseProduct, List<Product> purchaseProductsForReceipt, PromotionInfo promotionInfo) {
-        if(purchaseProduct.getQuantity() == promotionInfo.getPromotionBuyAmount() && purchaseProduct.getQuantity() < promotionInfo.getPromotionTotalAmount()) {;
-            String response = getResponseForExtraProduct(purchaseProduct, promotionInfo.getPromotionGetAmount());
-            if(response.equalsIgnoreCase("Y")) {
-                purchaseProduct.increaseQuantity(promotionInfo.getPromotionGetAmount());
-                productService.increaseTotalPurchaseAmount(purchaseProduct.getName(), purchaseProductsForReceipt, promotionInfo.getPromotionGetAmount());
-                return true;
-            } return false;
-        } return true;
     }
 
     private String getResponseForExtraProduct(Product buyProduct, int promotionGetAmount) {
