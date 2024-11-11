@@ -132,17 +132,25 @@ public class StoreService {
     private Stream<TotalProductStock> getTotalProductStock(List<Product> buyProducts) {
         return buyProducts.stream().map(buyProduct -> {
             String name = buyProduct.getName();
-            String promotionName = Optional.ofNullable(productService.getPromotionProductByName(name)).map(Product::getPromotion).orElse(null);
-            int promotionQuantity = 0;
-            if (promotionName != null) {
-                Promotion promotion = promotionService.getPromotionByName(promotionName);
-                promotionQuantity = promotionService.isPromotionActive(promotion) ?
-                        Optional.ofNullable(productService.getPromotionProductByName(name))
-                                .map(Product::getQuantity).orElse(0) : 0;
-            }
+            Product promotionProduct = productService.getPromotionProductByName(name);
+            int promotionQuantity = getPromotionStockQuantity(promotionProduct);
 
-            int regularQuantity = Optional.ofNullable(productService.getRegularProductByName(name))
-                    .map(Product::getQuantity).orElse(0);
-            return new TotalProductStock(name, promotionQuantity + regularQuantity);});
+            int regularQuantity = getRegularStockQuantity(name);
+
+            return new TotalProductStock(name, promotionQuantity + regularQuantity);
+        });
+    }
+
+    private int getRegularStockQuantity(String name) {
+        int regularQuantity = Optional.ofNullable(productService.getRegularProductByName(name))
+                .map(Product::getQuantity).orElse(0);
+        return regularQuantity;
+    }
+
+    private int getPromotionStockQuantity(Product promotionProduct) {
+        int promotionQuantity = Optional.ofNullable(promotionProduct)
+                .filter(prod -> promotionService.isPromotionActive(promotionService.getPromotionByName(prod.getPromotion())))
+                .map(Product::getQuantity).orElse(0);
+        return promotionQuantity;
     }
 }
