@@ -26,7 +26,7 @@ public class Application {
         StoreService storeService = new StoreService(productService, promotionService);
         MembershipService membershipService = new MembershipService(inputView, inputValidator);
 
-        StoreController storeController = new StoreController(inputView, outputView, productService, storeService, inputValidator, membershipService);
+        StoreController storeController = new StoreController(inputView, outputView, productService, storeService, inputValidator, membershipService, promotionService);
         storeController.startProcess();
     }
 }

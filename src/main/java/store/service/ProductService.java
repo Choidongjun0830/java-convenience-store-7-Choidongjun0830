@@ -87,11 +87,6 @@ public class ProductService {
         }
     }
 
-    public List<TotalProductStock> getTotalProductStocks(List<Product> buyProducts) {
-        return getTotalProductStock(buyProducts)
-                .collect(Collectors.toList());
-    }
-
     private static List<Product> setupBuyProducts(String[] buyProductAmounts) {
         List<Product> buyProducts = new ArrayList<>();
         for (String buyProductAmount : buyProductAmounts) {
@@ -148,15 +143,5 @@ public class ProductService {
         }
     }
 
-    private Stream<TotalProductStock> getTotalProductStock(List<Product> buyProducts) {
-        return buyProducts.stream().map(buyProduct -> {
-            String name = buyProduct.getName();
-            int totalQuantity = Optional.ofNullable(getPromotionProductByName(name))
-                    .map(Product::getQuantity)
-                    .orElse(0)
-                    + Optional.ofNullable(getRegularProductByName(name))
-                    .map(Product::getQuantity)
-                    .orElse(0);
-            return new TotalProductStock(name, totalQuantity);});
-    }
+
 }

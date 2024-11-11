@@ -29,20 +29,9 @@ public class PromotionService {
         this.inputValidator = inputValidator;
     }
 
-    private void parseProducts(String filePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            reader.readLine();
-            while((line = reader.readLine()) != null) {
-                String[] fields = line.split(",");
-                addPromotionInRepository(fields);
-            }
-        } catch (IOException e) { throw new IllegalArgumentException(e); }
-    }
-
     public void getAllPromotions() {
         if(promotionRepository.getAllPromotions().isEmpty()) {
-            parseProducts("src/main/resources/promotions.md");
+            parsePromotion("src/main/resources/promotions.md");
         }
     }
 
@@ -70,6 +59,25 @@ public class PromotionService {
                 productService.decreaseTotalPurchaseAmount(buyProduct.getName(), purchaseProductsForReceipt, decreaseQuantity);
             }
         }
+    }
+
+    public boolean isPromotionActive(Promotion promotion) {
+        if(promotion != null) {
+            LocalDate now = LocalDate.from(DateTimes.now());
+            return !now.isBefore(promotion.getStartDate()) && !now.isAfter(promotion.getEndDate());
+        }
+        return false;
+    }
+
+    private void parsePromotion(String filePath) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            reader.readLine();
+            while((line = reader.readLine()) != null) {
+                String[] fields = line.split(",");
+                addPromotionInRepository(fields);
+            }
+        } catch (IOException e) { throw new IllegalArgumentException(e); }
     }
 
     private void addPromotionInRepository(String[] fields) {
@@ -101,11 +109,6 @@ public class PromotionService {
             return promotion;
         }
         return null;
-    }
-
-    private boolean isPromotionActive(Promotion promotion) {
-        LocalDate now = LocalDate.from(DateTimes.now());
-        return !now.isBefore(promotion.getStartDate()) && !now.isAfter(promotion.getEndDate());
     }
 
     public boolean applyExtraForPromo(Product purchaseProduct, List<Product> purchaseProductsForReceipt, PromotionInfo promotionInfo) {

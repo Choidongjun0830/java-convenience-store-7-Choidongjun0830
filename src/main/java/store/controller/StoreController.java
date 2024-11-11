@@ -25,20 +25,23 @@ public class StoreController {
     private final StoreService storeService;
     private final InputValidator inputValidator;
     private final MembershipService membershipService;
+    private final PromotionService promotionService;
 
     public StoreController(InputView inputView, OutputView outputView, ProductService productService,
                            StoreService storeService, InputValidator inputValidator,
-                           MembershipService membershipService) {
+                           MembershipService membershipService, PromotionService promotionService) {
         this.inputView = inputView;
         this.outputView = outputView;
         this.productService = productService;
         this.storeService = storeService;
         this.inputValidator = inputValidator;
         this.membershipService = membershipService;
+        this.promotionService = promotionService;
     }
 
     public void startProcess() {
         do {
+            promotionService.getAllPromotions();
             List<Product> stockProducts = displayStockList();
             List<Product> purchaseProducts = getPurchaseProducts(stockProducts);
             List<Product> purchaseProductsForReceipt = productService.cloneProductList(purchaseProducts);
@@ -64,7 +67,7 @@ public class StoreController {
         inputValidator.purchaseProductInputPatternValidate(buyProductAmountInput);
 
         List<Product> purchaseProducts = productService.parsePurchaseProductFromInput(buyProductAmountInput);
-        List<TotalProductStock> totalProductStocks = productService.getTotalProductStocks(purchaseProducts);
+        List<TotalProductStock> totalProductStocks = storeService.getTotalProductStocks(purchaseProducts);
         inputValidator.purchaseProductValidate(stockProducts, purchaseProducts, totalProductStocks);
         return purchaseProducts;
     }

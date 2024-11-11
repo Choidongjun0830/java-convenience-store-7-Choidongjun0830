@@ -3,11 +3,15 @@ package store.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import store.domain.Product;
 import store.domain.Promotion;
 import store.domain.Store;
 import store.dto.PromotionApplyResult;
 import store.dto.PromotionInfo;
+import store.dto.TotalProductStock;
 
 public class StoreService {
 
@@ -19,9 +23,13 @@ public class StoreService {
         this.promotionService = promotionService;
     }
 
+    public List<TotalProductStock> getTotalProductStocks(List<Product> buyProducts) {
+        return getTotalProductStock(buyProducts)
+                .collect(Collectors.toList());
+    }
+
     public List<Store> connectProductsPromotions(List<Product> buyProducts) {
         List<Store> applyResults = new ArrayList<>();
-        promotionService.getAllPromotions();
         Map<String, Promotion> activePromotions = promotionService.findActivePromotions(buyProducts);
         purchaseProductStart(buyProducts, activePromotions, applyResults);
         return applyResults;
@@ -119,5 +127,22 @@ public class StoreService {
             stock.decreaseQuantity(purchaseQuantity);
             purchaseProduct.decreaseQuantity(purchaseQuantity);
         }
+    }
+
+    private Stream<TotalProductStock> getTotalProductStock(List<Product> buyProducts) {
+        return buyProducts.stream().map(buyProduct -> {
+            String name = buyProduct.getName();
+            String promotionName = Optional.ofNullable(productService.getPromotionProductByName(name)).map(Product::getPromotion).orElse(null);
+            int promotionQuantity = 0;
+            if (promotionName != null) {
+                Promotion promotion = promotionService.getPromotionByName(promotionName);
+                promotionQuantity = promotionService.isPromotionActive(promotion) ?
+                        Optional.ofNullable(productService.getPromotionProductByName(name))
+                                .map(Product::getQuantity).orElse(0) : 0;
+            }
+
+            int regularQuantity = Optional.ofNullable(productService.getRegularProductByName(name))
+                    .map(Product::getQuantity).orElse(0);
+            return new TotalProductStock(name, promotionQuantity + regularQuantity);});
     }
 }
