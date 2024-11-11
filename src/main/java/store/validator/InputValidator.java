@@ -8,7 +8,7 @@ import store.dto.TotalProductStock;
 
 public class InputValidator {
 
-    public static final List<String> POSSIBLE_RESPONSE = new ArrayList<>(List.of("Y", "N", "y", "n"));
+    public static final List<String> POSSIBLE_RESPONSE = new ArrayList<>(List.of("Y", "N"));
 
     public void purchaseProductInputPatternValidate(String buyProductAmountInput) {
         boolean patternMatches = buyProductAmountInput.matches("\\[\\s*([\\w가-힣]+)\\s*-\\s*(\\d+)\\s*\\](\\s*,\\s*\\[\\s*([\\w가-힣]+)\\s*-\\s*(\\d+)\\s*\\])*\\s*");
