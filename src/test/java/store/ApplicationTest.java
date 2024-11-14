@@ -38,10 +38,66 @@ class ApplicationTest extends NsTest {
     }
 
     @Test
+    void 상품_구매_입력_받기() {
+        assertSimpleTest(() -> {
+            run("[콜라-3],[에너지바-5]");
+            assertThat(output());
+        });
+    }
+
+    @Test
+    void 멤버십_여부_입력_받기_Y() {
+        assertSimpleTest(() -> {
+            run("[콜라-3],[에너지바-5]", "Y", "N");
+            assertThat(output());
+        });
+    }
+
+    @Test
+    void 멤버십_여부_입력_받기_N() {
+        assertSimpleTest(() -> {
+            run("[콜라-3],[에너지바-5]", "N", "N");
+            assertThat(output());
+        });
+    }
+
+    @Test
+    void 프로모션_재고_부족() {
+        assertSimpleTest(() -> {
+            run("[콜라-4]", "N", "N", "N");
+            assertThat(output().replaceAll("\\s", "")).contains("내실돈2,000");
+        });
+    }
+
+    @Test
+    void 프로모션_구매_수량_부족_1_플러스_1() {
+        assertSimpleTest(() -> {
+            run("[오렌지주스-3]", "Y", "N");
+            assertThat(output().replaceAll("\\s", "")).contains("내실돈3,600");
+        });
+    }
+
+    @Test
+    void 프로모션_구매_수량_부족_2_플러스_1() {
+        assertSimpleTest(() -> {
+            run("[콜라-2]", "Y", "N");
+            assertThat(output().replaceAll("\\s", "")).contains("내실돈2,000");
+        });
+    }
+
+    @Test
     void 여러_개의_일반_상품_구매() {
         assertSimpleTest(() -> {
             run("[비타민워터-3],[물-2],[정식도시락-2]", "N", "N");
             assertThat(output().replaceAll("\\s", "")).contains("내실돈18,300");
+        });
+    }
+
+    @Test
+    void 전체_예시_테스트() {
+        assertSimpleTest(() -> {
+            run("[콜라-3],[에너지바-5]", "Y", "Y", "[콜라-10]", "Y", "N", "Y", "[오렌지주스-1]", "Y", "N");
+            assertThat(output().replaceAll("\\s", "")).contains("내실돈9,000","내실돈8,000","내실돈1,800");
         });
     }
 
@@ -54,12 +110,21 @@ class ApplicationTest extends NsTest {
     }
 
     @Test
-    void 예외_테스트() {
+    void 증정품_구매하지_않는_경우1() {
         assertSimpleTest(() -> {
-            runException("[컵라면-12]", "N", "N");
-            assertThat(output()).contains("[ERROR] 재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
+            run("[사이다-2]", "N", "Y","N");
+            assertThat(output().replaceAll("\\s", "")).contains("내실돈1,400");
         });
     }
+
+    @Test
+    void 증정품_구매하지_않는_경우2() {
+        assertSimpleTest(() -> {
+            run("[콜라-10]", "N", "N", "N");
+            assertThat(output().replaceAll("\\s", "")).contains("내실돈6,000");
+        });
+    }
+
 
     @Override
     public void runMain() {
